@@ -27,6 +27,11 @@ jobs:
       with:
         # your npm token
         token: d328c9de-1f37-4762-b131-750ccec29f10
+    - uses: oleksiyrudenko/gha-git-credentials@v1
+      with:
+        name: 'Uladzimir Svirydzenka'
+        email: 'vladimirsviridenko1998@gmail.com'
+        actor: 'vladimir-sviridenko'
     - name: Deploy
       run: |
         npm ci
