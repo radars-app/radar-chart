@@ -27,10 +27,8 @@ jobs:
       with:
         # your npm token
         token: d328c9de-1f37-4762-b131-750ccec29f10
-    - name: Configure git credentials
-      # You may pin to the exact commit or the version.
-      # uses: OleksiyRudenko/gha-git-credentials@8ce07064859c8aac245a9d0d87d373c7ca6fe573
-      uses: OleksiyRudenko/gha-git-credentials@v1
+    - name: Setup GIT user
+      uses: fregante/setup-git-user@v1
     - name: Deploy
       run: |
         npm ci
