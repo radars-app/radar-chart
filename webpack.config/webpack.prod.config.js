@@ -3,7 +3,7 @@ const baseWebpackConfig = require('./webpack.base.config');
 const TerserWebpackPlugin = require('terser-webpack-plugin');
 
 module.exports = merge(baseWebpackConfig, {
-  mode: "production",
+  mode: 'production',
   optimization: {
     minimizer: [
       new TerserWebpackPlugin({
