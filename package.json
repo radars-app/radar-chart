@@ -9,7 +9,7 @@
   "lint": "tslint --project tslint.json",
   "test": "karma start",
   "test-ci": "karma start --single-run",
-  "deploy": "standard-version && npm run build && npm publish ./dist"
+  "release": "standard-version && npm run build:dev && npm publish ./dist"
  },
  "repository": {
   "type": "git",

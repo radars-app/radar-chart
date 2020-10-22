@@ -1,7 +1,7 @@
 module.exports = function (config) {
   config.set({
     basePath: '',
-    frameworks: ['jasmine', "karma-typescript"],
+    frameworks: ['jasmine', 'karma-typescript'],
     plugins: [
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
@@ -10,14 +10,14 @@ module.exports = function (config) {
 			require('karma-typescript')
 		], 
 		files: [
-			"src/**/*.ts"
+			'src/**/*.ts'
 		],
 		exclude: [
 			'node_modules'
 		],
 		preprocessors: {
-			"src/**/*.ts": ['karma-typescript'],
-			"src/**/*.spec.ts": ['karma-typescript']
+			'src/**/*.ts': ['karma-typescript'],
+			'src/**/*.spec.ts': ['karma-typescript']
 		},
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
