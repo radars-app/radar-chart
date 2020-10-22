@@ -32,4 +32,6 @@ jobs:
     - name: Deploy
       run: |
         npm ci
-        npm run release
+        standard-version 
+        npm run build:dev
+        npm publish ./dist
