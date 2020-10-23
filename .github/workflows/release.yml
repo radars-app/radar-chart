@@ -29,13 +29,6 @@ jobs:
         token: d328c9de-1f37-4762-b131-750ccec29f10
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
-    - name: Bump Version
-    - uses: actions/checkout@master
-    - uses: tool3/bump@v1
-      with:
-        github_token: d8a7a90bbc16e39c97fa4e5363ace1ae4281a020
-        user: Uladzimir Svirydzenka
-        email: vladimirsviridenko1998@gmail.com
     - name: Deploy
       run: |
         npm ci
