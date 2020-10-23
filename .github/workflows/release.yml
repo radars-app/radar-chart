@@ -51,25 +51,11 @@ jobs:
     
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
-  
-    - name: Disable 'Include Administrator'
-      # You may pin to the exact commit or the version.
-      # uses: benjefferies/branch-protection-bot@29ac942cc67507dece0a73d496a841167952a3fe
-      uses: benjefferies/branch-protection-bot@1.0.5
-      with:
-        access-token: ${{ secrets.GIT_TOKEN }}
 
     - name: Bump Version
       uses: phips28/gh-action-bump-version@master
       env:
         GITHUB\_TOKEN: ${{ secrets.GIT_TOKEN }}
-  
-    - name: Enable 'Include Administrator'
-      # You may pin to the exact commit or the version.
-      # uses: benjefferies/branch-protection-bot@29ac942cc67507dece0a73d496a841167952a3fe
-      uses: benjefferies/branch-protection-bot@1.0.5
-      with:
-        access-token: ${{ secrets.GIT_TOKEN }}
   
     - name: Deploy
       run: |
