@@ -29,17 +29,18 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
-    - name: Check Base Branch
+    - name: Push to Status Check-Protected Branches
       # You may pin to the exact commit or the version.
-      # uses: a-b-r-o-w-n/check-base-branch-action@f6e6e6f6d8264955f8c4c3a0d4111dfb20771bf7
-      uses: a-b-r-o-w-n/check-base-branch-action@v1.1
+      # uses: CasperWA/push-protected@239aa974eba5459ab3c61319683215b7c8c58f8b
+      uses: CasperWA/push-protected@v1.0.1
       with:
-        # Token used to interact with the Github API.
-        repo-token: ${{ secrets.GIT_TOKEN }}
-        # Comma separated list of branches that are protected.
-        protected-branches: main
-        # If true, will update base branch of PR.
-        default-branch: main
+        # Token for the repo
+        token: ${{ secrets.GIT_TOKEN }}
+        # Repository name to push to. Default or empty value represents current github repository
+        branch: main
+        # Time (in minutes) of how long the action should run before timing out, waiting for status checks to complete
+        timeout: 4
+        # Time (in seconds) the action should wait until it will start "waiting" and check the list of running actions/checks. This should be an appropriate number to let the checks start up
     - name: Bump Action
       # You may pin to the exact commit or the version.
       # uses: tool3/bump@c8e7f01fd3cfd3f58711b8e95349479c3cc2cbf6
