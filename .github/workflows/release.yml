@@ -23,7 +23,7 @@ jobs:
     - name: Sleep for 120 seconds to done check
       uses: jakejarvis/wait-action@master
       with:
-        time: '120s'
+        time: '1s'
     
     - name: Check Base Branch
     # You may pin to the exact commit or the version.
