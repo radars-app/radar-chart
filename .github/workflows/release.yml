@@ -49,6 +49,7 @@ jobs:
         branch: main
         # github access token
         github_token: ${{ secrets.GIT_TOKEN }}
+        unrelated: true
     
     - name: Deploy
       run: |
