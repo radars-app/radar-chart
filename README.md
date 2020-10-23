@@ -8,5 +8,5 @@ Scripts
   - test-ci (to test once)
 
 # Attention!
-> bump package.json version with yourself before mere into master.
+> bump package.json version with yourself before merge into master.
 
