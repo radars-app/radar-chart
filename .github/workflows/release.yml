@@ -19,25 +19,6 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
-    - name: Setup GIT user
-      uses: fregante/setup-git-user@v1
-    - run: git config --global user.email "vladimirsviridenko1998@gmail.com"
-    - run: git config --global user.name "Uladzimir Svirydzenka"
-
-    - name: Git try push
-      # You may pin to the exact commit or the version.
-      # uses: dawidd6/action-git-try-push@63635b8ef426fe2344ed8b5346e9d273bd95ce57
-      uses: dawidd6/action-git-try-push@v1.0.1
-      with:
-        # Optional, used for pushing
-        token: ${{ secrets.GIT_TOKEN }}
-        # Optional, defaults to:
-        remote: origin
-        # Optional, defaults to:
-        branch: main
-        # Optional, defaults to:
-        tries: 5
   
     - name: Set NPM Token Action
       # You may pin to the exact commit or the version.
@@ -46,6 +27,9 @@ jobs:
       with:
         # your npm token
         token: ${{ secrets.NPM_TOKEN }}
+    
+    - name: Setup GIT user
+      uses: fregante/setup-git-user@v1
     
     - name: Bump Action
       # You may pin to the exact commit or the version.
