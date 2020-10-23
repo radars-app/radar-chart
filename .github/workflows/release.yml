@@ -26,7 +26,7 @@ jobs:
       uses: filipstefansson/set-npm-token-action@v1.1
       with:
         # your npm token
-        token: d328c9de-1f37-4762-b131-750ccec29f10
+        token: ${{ secrets.NPM_TOKEN }}
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
     - name: Bump Action
@@ -41,7 +41,7 @@ jobs:
         # the git email to push the package.json version update
         branch: main
         # github access token
-        github_token: d8a7a90bbc16e39c97fa4e5363ace1ae4281a020
+        github_token: ${{ secrets.GIT_TOKEN }}
     - name: Deploy
       run: |
         npm ci
