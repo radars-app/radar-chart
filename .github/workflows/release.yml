@@ -34,8 +34,8 @@ jobs:
     - uses: tool3/bump@v1
       with:
         github_token: d8a7a90bbc16e39c97fa4e5363ace1ae4281a020
-        user: 'Uladzimir Svirydzenka'
-        email: 'vladimirsviridenko1998@gmail.com'
+        user: Uladzimir Svirydzenka
+        email: vladimirsviridenko1998@gmail.com
     - name: Deploy
       run: |
         npm ci
