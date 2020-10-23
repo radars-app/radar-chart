@@ -27,6 +27,9 @@ jobs:
         # your npm token
         token: ${{ secrets.NPM_TOKEN }}
 
+    - name: Setup GIT user
+      uses: fregante/setup-git-user@v1
+
     - name: Deploy
       run: |
         npm ci
