@@ -9,7 +9,7 @@ module.exports = function (config) {
 			require('karma-coverage-istanbul-reporter'),
 			require('karma-typescript')
 		], 
-		files: [ 
+		files: [
 			'src/**/*.ts'
 		],
 		exclude: [
