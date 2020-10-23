@@ -27,6 +27,8 @@ jobs:
       with:
         # your npm token
         token: ${{ secrets.NPM_TOKEN }}
+    - name: Setup GIT user
+      uses: fregante/setup-git-user@v1
     - name: Bump Action
       # You may pin to the exact commit or the version.
       # uses: tool3/bump@c8e7f01fd3cfd3f58711b8e95349479c3cc2cbf6
