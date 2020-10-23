@@ -20,10 +20,10 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
       
-    - name: Sleep for 40 seconds to do checks
+    - name: Sleep for 120 seconds to do checks
       uses: jakejarvis/wait-action@master
       with:
-        time: '40s'
+        time: '120s'
   
     - name: Set NPM Token Action
       # You may pin to the exact commit or the version.
