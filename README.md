@@ -8,7 +8,7 @@ Scripts
   - `test-ci` (to test once)
 
 # Attention!
-**Bump package.json version by yourself before merging into master.**
+**Bump up package.json version by yourself before merging into master.**
 **That's for automated deploy to npm. Version should be higher than published.**
 **You can check published version by link bellow.**
 
