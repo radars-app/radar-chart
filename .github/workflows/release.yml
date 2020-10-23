@@ -51,26 +51,14 @@ jobs:
     
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
-
-    - name: "Checkout source code"
-      uses: "actions/checkout@v2"
-      with:
-        ref: ${{ github.ref }}
-    - name: "cat package.json"
-      run: cat ./package.json
-    - name: "Setup Node.js"
-      uses: "actions/setup-node@v1"
-      with:
-        node-version: 12
-    - name: "Automated Version Bump"
-      uses: "phips28/gh-action-bump-version@3.1.5"
-      with:
-        tag-prefix: ''
+    
+    - name: Package Version Updated
+      # You may pin to the exact commit or the version.
+      # uses: MontyD/package-json-updated-action@c2038ab106288f75eab2c0c75fff04617d886963
+      uses: MontyD/package-json-updated-action@1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
-    - name: "cat package.json"
-      run: cat ./package.json
-    
+
     - name: Deploy
       run: |
         npm ci
