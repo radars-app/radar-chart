@@ -64,7 +64,7 @@ jobs:
         # the git email to push the package.json version update
         branch: main
         # github access token
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.GIT_TOKEN }}
   
     - name: Deploy
       run: |
