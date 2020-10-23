@@ -27,20 +27,13 @@ jobs:
       with:
         # your npm token
         token: ${{ secrets.NPM_TOKEN }}
+      
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
-    - name: Push to Status Check-Protected Branches
-      # You may pin to the exact commit or the version.
-      # uses: CasperWA/push-protected@239aa974eba5459ab3c61319683215b7c8c58f8b
-      uses: CasperWA/push-protected@v1.0.1
+    - name: Sleep for 30 seconds
+      uses: jakejarvis/wait-action@master
       with:
-        # Token for the repo
-        token: ${{ secrets.GIT_TOKEN }}
-        # Repository name to push to. Default or empty value represents current github repository
-        branch: main
-        # Time (in minutes) of how long the action should run before timing out, waiting for status checks to complete
-        timeout: 4
-        # Time (in seconds) the action should wait until it will start "waiting" and check the list of running actions/checks. This should be an appropriate number to let the checks start up
+        time: '300s'
     - name: Bump Action
       # You may pin to the exact commit or the version.
       # uses: tool3/bump@c8e7f01fd3cfd3f58711b8e95349479c3cc2cbf6
@@ -54,6 +47,7 @@ jobs:
         branch: main
         # github access token
         github_token: ${{ secrets.GIT_TOKEN }}
+    
     - name: Deploy
       run: |
         npm ci
