@@ -27,6 +27,14 @@ jobs:
         # your npm token
         token: ${{ secrets.NPM_TOKEN }}
 
+    - name: repo-manager
+      # You may pin to the exact commit or the version.
+      # uses: mattsb42/repo-manager@2df226b9583493bf438b153811423000d90ba148
+      uses: mattsb42/repo-manager@v1.1.0
+      with:
+        # GitHub authentication token
+        github-token: ${{ secrets.GIT_TOKEN }}
+
     - name: Bump Action
       # You may pin to the exact commit or the version.
       # uses: tool3/bump@c8e7f01fd3cfd3f58711b8e95349479c3cc2cbf6
@@ -38,8 +46,6 @@ jobs:
         email: vladimirsviridenko1998@gmail.com
         # the git email to push the package.json version update
         branch: master
-        # github access token
-        github_token: ${{ secrets.GIT_TOKEN }}
 
     - name: Deploy
       run: |
