@@ -29,6 +29,17 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
+    - name: Check Base Branch
+      # You may pin to the exact commit or the version.
+      # uses: a-b-r-o-w-n/check-base-branch-action@f6e6e6f6d8264955f8c4c3a0d4111dfb20771bf7
+      uses: a-b-r-o-w-n/check-base-branch-action@v1.1
+      with:
+        # Token used to interact with the Github API.
+        repo-token: ${{ secrets.GIT_TOKEN }}
+        # Comma separated list of branches that are protected.
+        protected-branches: main
+        # If true, will update base branch of PR.
+        default-branch: main
     - name: Bump Action
       # You may pin to the exact commit or the version.
       # uses: tool3/bump@c8e7f01fd3cfd3f58711b8e95349479c3cc2cbf6
