@@ -19,11 +19,6 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-      
-    - name: Sleep for 120 seconds to do checks
-      uses: jakejarvis/wait-action@master
-      with:
-        time: '120s'
   
     - name: Set NPM Token Action
       # You may pin to the exact commit or the version.
@@ -35,6 +30,11 @@ jobs:
     
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
+    
+    - name: Sleep for 120 seconds to do checks
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '120s'
     
     - name: Bump Action
       # You may pin to the exact commit or the version.
