@@ -36,21 +36,11 @@ jobs:
     - name: Setup GIT user
       uses: fregante/setup-git-user@v1
     
-    - name: Bump Action
-      # You may pin to the exact commit or the version.
-      # uses: tool3/bump@c8e7f01fd3cfd3f58711b8e95349479c3cc2cbf6
-      uses: tool3/bump@v.1.2
+    - uses: thepassle/changelog-enforcer@0.0.6
       with:
-        # the git user to push the package.json version update
-        user: Uladzimir Svirydzenka
-        # the git email to push the package.json version update
-        email: vladimirsviridenko1998@gmail.com
-        # the git email to push the package.json version update
-        branch: main
-        # github access token
-        github_token: ${{ secrets.GIT_TOKEN }}
-        unrelated: true
+        github-token: ${{ secrets.GIT_TOKEN }}
     
+
     - name: Deploy
       run: |
         npm ci
