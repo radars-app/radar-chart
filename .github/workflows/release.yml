@@ -34,4 +34,4 @@ jobs:
       run: |
         npm ci
         npm run build:dev
-        npm publish ./dist
+        npm publish
