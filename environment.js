@@ -1,4 +1,5 @@
 module.exports = {
 	DEV: 'development',
-	PROD: 'production'
+	PROD: 'production',
+	SERVER: 'server'
 }

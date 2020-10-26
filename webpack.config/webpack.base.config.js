@@ -33,6 +33,8 @@ const baseStyleLoaders = [
 	}
 ];
 
+module.exports = PATHS;
+
 module.exports = {
 	target: 'web',
 	entry: {
@@ -82,7 +84,6 @@ module.exports = {
 		]
 	},
 	plugins: [
-		new CleanWebpackPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'styles.css'
 		})
