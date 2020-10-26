@@ -1,7 +1,6 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin'); 
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const environment = require('../environment');
 
 const PATHS = {
@@ -35,6 +34,7 @@ const baseStyleLoaders = [
 ];
 
 module.exports = {
+	target: 'web',
   entry: {
     index: path.join(PATHS.src, 'index.ts')
   },
@@ -43,8 +43,11 @@ module.exports = {
   },
   output: {
     path: PATHS.dist,
-    filename: '[name].js',
-		library: 'RadarChart',
+		filename: '[name].js',
+		library: 'RadarChartProject',
+		libraryTarget: 'umd',
+		globalObject: 'this',
+		umdNamedDefine: true
   },
   resolve: {
     modules: ['node_modules'],
@@ -79,11 +82,6 @@ module.exports = {
     ]
 	},
   plugins: [
-		new CopyPlugin({
-      patterns: [
-        {from: path.join(PATHS.root, 'package.json')},
-      ],
-    }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: 'styles.css'

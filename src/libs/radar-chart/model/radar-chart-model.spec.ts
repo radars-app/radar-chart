@@ -1,10 +1,10 @@
-import { RadarChart } from './radar-chart';
+import { RadarChartModel } from './radar-chart-model';
 
 describe('RadarChart', () => {
-	let instance: RadarChart;
+	let instance: RadarChartModel;
 
 	beforeEach(() => {
-		instance = new RadarChart();
+		instance = new RadarChartModel();
 	});
 
 	it('should create instance', () => {
