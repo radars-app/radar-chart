@@ -1,4 +1,4 @@
-import { D3Selection } from '../../models/d3-selection';
+import { D3Selection } from '../../models/types/d3-selection';
 import { RadarChartConfig } from './radar-chart.config';
 import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
@@ -58,11 +58,11 @@ export class RadarChartRenderer {
 		const size: Dimension = this.size$.getValue();
 		this.container
 			.attr('width', size.width)
-			.attr('height', () => size.height <= this.config.minHeight ? this.config.minHeight : size.height);
+			.attr('height', () => this.scaleX(this.config.minHeight));
 
 		this.ringsContainer
-			.attr('transform', `translate(${this.scaleX(this.config.transformX)}, ${this.scaleY(this.config.transformY)})`)
-			.attr('width', this.scaleX(this.config.ringsContainerSize))
-			.attr('height', this.scaleX(this.config.ringsContainerSize));
+			.attr('transform', `translate(${this.scaleX(this.config.transformX)}, ${this.scaleX(this.config.transformY)})`)
+			.attr('width', this.scaleX(this.config.ringsConfig.ringsContainerSize))
+			.attr('height', this.scaleX(this.config.ringsConfig.ringsContainerSize));
 	}
 }

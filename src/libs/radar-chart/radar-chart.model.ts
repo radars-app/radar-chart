@@ -1,4 +1,3 @@
-import { SectorsModel } from '../sectors/sectors.model';
 import { RingsModel } from '../rings/rings.model';
 
 export class RadarChartModel {

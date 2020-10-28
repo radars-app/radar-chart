@@ -7,17 +7,15 @@ export class RadarChartConfig {
 
 	public readonly transformX: number;
 	public readonly transformY: number;
-	public readonly ringsContainerSize: number;
 	public readonly minHeight: number;
 	public readonly backgroundColor: string;
 	public readonly ringsConfig: RingsConfig;
 
 	constructor() {
+		this.ringsConfig = new RingsConfig();
 		this.transformX = 542;
 		this.transformY = 18;
-		this.ringsContainerSize = 622;
-		this.minHeight = this.ringsContainerSize + this.transformY * 2;
+		this.minHeight = this.ringsConfig.ringsContainerSize + this.transformY * 2;
 		this.backgroundColor = '#99A6B5';
-		this.ringsConfig = new RingsConfig();
 	}
 }
