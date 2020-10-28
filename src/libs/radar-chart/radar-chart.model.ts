@@ -1,12 +1,11 @@
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { ThemeModel } from '../theme/theme.model';
-import { RootCircleModel } from '../root-circle/root-circle.model';
+import { SectorsModel } from '../sectors/sectors.model';
+import { RingsModel } from '../rings/rings.model';
 
 export class RadarChartModel {
-	public readonly theming: ThemeModel;
-	public readonly rootCircle: BehaviorSubject<RootCircleModel>;
+
+	public readonly rings: RingsModel;
 
 	constructor() {
-		this.theming = new ThemeModel();
+		this.rings = new RingsModel();
 	}
 }
