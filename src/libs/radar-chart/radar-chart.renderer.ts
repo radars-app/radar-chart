@@ -5,11 +5,11 @@ import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Dimension } from '../../models/dimension';
 import { ScaleLinear, scaleLinear } from 'd3';
+import { SectorsRenderer } from '../sectors/sectors.renderer';
 
 export class RadarChartRenderer {
 
 	private scaleX: ScaleLinear<number, number>;
-	private scaleY: ScaleLinear<number, number>;
 
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
@@ -17,31 +17,33 @@ export class RadarChartRenderer {
 	constructor(
 		private container: D3Selection,
 		private model: RadarChartModel,
-		private config: RadarChartConfig,
+		private config$: BehaviorSubject<RadarChartConfig>,
 		private size$: BehaviorSubject<Dimension>
 	) {
 		this.initContainers();
 		this.initScaling();
 	}
 
+	private get config(): RadarChartConfig {
+		return this.config$.getValue();
+	}
+
 	public start(): void {
-		this.ringsRenderer = new RingsRenderer(
-			this.ringsContainer,
-			this.model.rings,
-			this.config.ringsConfig,
-			this.size$
-		);
+		this.config$.subscribe(() => {
+			this.ringsRenderer = new RingsRenderer(
+				this.ringsContainer,
+				this.model.rings,
+				this.config.ringsConfig,
+				this.size$
+			);
+		});
 	}
 
 	private initScaling(): void {
 		this.size$.subscribe((size: Dimension) => {
 			this.scaleX = scaleLinear()
-				.domain([0, this.config.domainX])
+				.domain([0, 1366])
 				.range([0, size.width]);
-
-			this.scaleY = scaleLinear()
-				.domain([0, this.config.domainY])
-				.range([0, size.height]);
 
 			this.update();
 		});
@@ -50,8 +52,8 @@ export class RadarChartRenderer {
 	private initContainers(): void {
 		this.container
 			.style('background', this.config.backgroundColor);
-		this.ringsContainer = this.container.append('rect')
-			.attr('class', 'radar-chart__root-circle');
+		this.ringsContainer = this.container.append('g')
+			.attr('class', 'radar-chart__rings');
 	}
 
 	private update(): void {
@@ -61,8 +63,6 @@ export class RadarChartRenderer {
 			.attr('height', () => this.scaleX(this.config.minHeight));
 
 		this.ringsContainer
-			.attr('transform', `translate(${this.scaleX(this.config.transformX)}, ${this.scaleX(this.config.transformY)})`)
-			.attr('width', this.scaleX(this.config.ringsConfig.ringsContainerSize))
-			.attr('height', this.scaleX(this.config.ringsConfig.ringsContainerSize));
+			.attr('transform', `translate(${this.scaleX(this.config.transformX)}, ${this.scaleX(this.config.transformY)})`);
 	}
 }

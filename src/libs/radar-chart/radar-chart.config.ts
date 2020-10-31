@@ -2,8 +2,8 @@ import './radar-chart.scss';
 import { RingsConfig } from '../rings/rings.config';
 
 export class RadarChartConfig {
-	public readonly domainX: number = 1366;
-	public readonly domainY: number = 658;
+	//public readonly domainX: number = 1366;
+	//public readonly domainY: number = 658;
 
 	public readonly transformX: number;
 	public readonly transformY: number;
@@ -15,7 +15,7 @@ export class RadarChartConfig {
 		this.ringsConfig = new RingsConfig();
 		this.transformX = 542;
 		this.transformY = 18;
-		this.minHeight = this.ringsConfig.ringsContainerSize + this.transformY * 2;
-		this.backgroundColor = '#99A6B5';
+		this.minHeight = this.ringsConfig.ringsContainerRadius * 2 + this.transformY * 2;
+		this.backgroundColor = '#F0F4F8';
 	}
 }

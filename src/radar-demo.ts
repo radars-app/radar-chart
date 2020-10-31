@@ -7,10 +7,23 @@ import { Dimension } from './models/dimension';
 
 const model: RadarChartModel = new RadarChartModel();
 model.rings.ringNames.next(['Adopt', 'Trial', 'Assess', 'Hold']);
+model.rings.sectors.sectorNames.next([
+	'Technologies',
+	'Startups',
+	'Libraries',
+	'Devices',
+	'Languages-And-Frameworks',
+	'Tools',
+	'Platforms',
+	'Techniques'
+]);
+
 const size$: BehaviorSubject<Dimension> = new BehaviorSubject({
 	width: document.body.clientWidth,
 	height: window.innerHeight
 });
+
+const config$: BehaviorSubject<RadarChartConfig> = new BehaviorSubject<RadarChartConfig>(new RadarChartConfig);
 
 window.onresize = ($event: Event) => {
 	size$.next({
@@ -24,8 +37,13 @@ export function startDemo(): void {
 	const renderer: RadarChartRenderer = new RadarChartRenderer(
 		select('svg.radar-chart'),
 		model,
-		new RadarChartConfig(),
+		config$,
 		size$
 	);
 	renderer.start();
 }
+
+select('button.demo-action')
+	.on('click', () => {
+		model.rings.ringNames.next(['dfdf', 'dfdf'])
+	});
