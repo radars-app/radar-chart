@@ -6,7 +6,7 @@ import { RadarChartRenderer } from './libs/radar-chart/radar-chart.renderer';
 import { Dimension } from './models/dimension';
 
 const model: RadarChartModel = new RadarChartModel();
-model.rings.ringNames.next(['Adopt', 'Trial', 'Assess', 'Hold']);
+model.rings.ringNames.next(['Hold', 'Assess', 'Trial', 'Adopt'].reverse());
 model.rings.sectors.sectorNames.next([
 	'Technologies',
 	'Startups',
@@ -43,7 +43,12 @@ export function startDemo(): void {
 	renderer.start();
 }
 
-select('button.demo-action')
+select('button.change-ringNames')
 	.on('click', () => {
-		model.rings.ringNames.next(['dfdf', 'dfdf'])
+		model.rings.ringNames.next(['Build', 'Trials']);
+	});
+
+select('button.change-sectorNames')
+	.on('click', () => {
+		model.rings.sectors.sectorNames.next(['Tech', 'Mech', 'Heh']);
 	});

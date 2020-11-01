@@ -6,10 +6,11 @@ import { BehaviorSubject } from 'rxjs';
 import { Dimension } from '../../models/dimension';
 import { ScaleLinear, scaleLinear } from 'd3';
 import { SectorsRenderer } from '../sectors/sectors.renderer';
+import { Scaler } from '../helpers/scaler';
 
 export class RadarChartRenderer {
 
-	private scaleX: ScaleLinear<number, number>;
+	private scaler: Scaler;
 
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
@@ -34,19 +35,15 @@ export class RadarChartRenderer {
 				this.ringsContainer,
 				this.model.rings,
 				this.config.ringsConfig,
-				this.size$
+				this.scaler
 			);
 		});
 	}
 
 	private initScaling(): void {
-		this.size$.subscribe((size: Dimension) => {
-			this.scaleX = scaleLinear()
-				.domain([0, 1366])
-				.range([0, size.width]);
-
-			this.update();
-		});
+		this.scaler = new Scaler(this.size$);
+		this.scaler.containerUpdaters.push(this.update.bind(this));
+		this.scaler.startContainerResizer();
 	}
 
 	private initContainers(): void {
@@ -60,9 +57,9 @@ export class RadarChartRenderer {
 		const size: Dimension = this.size$.getValue();
 		this.container
 			.attr('width', size.width)
-			.attr('height', () => this.scaleX(this.config.minHeight));
+			.attr('height', () => this.scaler.containerX(this.config.minHeight));
 
 		this.ringsContainer
-			.attr('transform', `translate(${this.scaleX(this.config.transformX)}, ${this.scaleX(this.config.transformY)})`);
+			.attr('transform', `translate(${this.scaler.containerX(this.config.transformX)}, ${this.scaler.containerX(this.config.transformY)})`);
 	}
 }

@@ -2,9 +2,6 @@ import './radar-chart.scss';
 import { RingsConfig } from '../rings/rings.config';
 
 export class RadarChartConfig {
-	//public readonly domainX: number = 1366;
-	//public readonly domainY: number = 658;
-
 	public readonly transformX: number;
 	public readonly transformY: number;
 	public readonly minHeight: number;

@@ -7,15 +7,15 @@ import { D3PieData } from '../../models/types/d3-pie-data';
 import { RingData } from 'src/models/ring-data';
 import { SectorsModel } from './sectors.model';
 import { SectorsConfig } from './sectors.config';
+import { Scaler } from '../helpers/scaler';
 
 export class SectorsRenderer {
-	public scaleX: ScaleLinear<number, number>;
 
 	constructor(
 		private container: D3Selection,
 		private model: SectorsModel,
 		private config: SectorsConfig,
-		private size$: BehaviorSubject<Dimension>
+		private scaler: Scaler
 	) {
 		this.initScaling();
 		this.initBehavior();
@@ -25,17 +25,12 @@ export class SectorsRenderer {
 		return this.model.sectorNames.getValue();
 	}
 
-	private initBehavior(): void {
-		this.model.sectorNames.subscribe((sectorNames: string[]) => {
-			this.update();
-		});
+	private initScaling(): void {
+		this.scaler.containerUpdaters.push(this.update.bind(this));
 	}
 
-	private initScaling(): void {
-		this.size$.subscribe((size: Dimension) => {
-			this.scaleX = scaleLinear()
-				.domain([0, 1366]) // TODO: save domain in model as observable as 0
-				.range([0, size.width]);
+	private initBehavior(): void {
+		this.model.sectorNames.subscribe((sectorNames: string[]) => {
 			this.update();
 		});
 	}
@@ -48,8 +43,8 @@ export class SectorsRenderer {
 
 	private getArcByRing(ring: RingData): Arc<any, any> {
 		return arc()
-			.innerRadius(this.scaleX(ring.radius.innerRadius))
-			.outerRadius(this.scaleX(ring.radius.outerRadius));
+			.innerRadius(this.scaler.containerX(ring.radius.innerRadius))
+			.outerRadius(this.scaler.containerX(ring.radius.outerRadius));
 	}
 
 	private update(): void {

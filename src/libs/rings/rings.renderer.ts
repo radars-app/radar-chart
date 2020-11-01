@@ -7,10 +7,9 @@ import { SectorsRenderer } from '../sectors/sectors.renderer';
 import { convertToClassName } from '../helpers/convertToClassName';
 import { ScaleLinear, scaleLinear, selectAll } from 'd3';
 import { RingData } from 'src/models/ring-data';
+import { Scaler } from '../helpers/scaler';
 
 export class RingsRenderer {
-
-	private scaleX: ScaleLinear<number, number>;
 
 	private sectorsContainer: D3Selection;
 	private sectorsRenderer: SectorsRenderer;
@@ -19,20 +18,24 @@ export class RingsRenderer {
 		private container: D3Selection,
 		private model: RingsModel,
 		private config: RingsConfig,
-		private size$: BehaviorSubject<Dimension>) {
+		private scaler: Scaler) {
 			this.initContainers();
-			this.initScaling();
+			this.initBehavior();
 			this.sectorsRenderer = new SectorsRenderer(
 				this.sectorsContainer,
 				this.model.sectors,
 				this.config.sectorsConfig,
-				this.size$
+				this.scaler
 			);
-			this.initBehavior();
+			this.initScaling();
 		}
 
 	private get ringNames(): string[] {
 		return this.model.ringNames.getValue();
+	}
+
+	private initScaling(): void {
+		this.scaler.containerUpdaters.push(this.update.bind(this));
 	}
 
 	private initContainers(): void {
@@ -41,16 +44,6 @@ export class RingsRenderer {
 
 	private initBehavior(): void {
 		this.model.ringNames.subscribe((ringNames: string[]) => {
-			this.update();
-		});
-	}
-
-	private initScaling(): void {
-		this.size$.subscribe((size: Dimension) => {
-			this.scaleX = scaleLinear()
-				.domain([0, 1366]) // TODO: save domain in model as observable as 0
-				.range([0, size.width]);
-
 			this.update();
 		});
 	}
@@ -76,15 +69,15 @@ export class RingsRenderer {
 		const rings: RingData[] = this.calculateRingsData();
 
 		const ringsUpdate: D3Selection = this.container.selectAll('g.ring-container')
-			.data(rings.reverse())
+			.data(rings)
 			.attr('class', (ring: RingData) => `ring-container ${ring.className}`)
-			.attr('transform', `translate(${this.scaleX(this.config.ringsContainerRadius)}, ${this.scaleX(this.config.ringsContainerRadius)})`);
+			.attr('transform', `translate(${this.scaler.containerX(this.config.ringsContainerRadius)}, ${this.scaler.containerX(this.config.ringsContainerRadius)})`);
 
 		const ringsEnter: D3Selection = ringsUpdate
 			.enter()
 				.append('g')
 				.attr('class', (ring: RingData) => `ring-container ${ring.className}`)
-				.attr('transform', `translate(${this.scaleX(this.config.ringsContainerRadius)}, ${this.scaleX(this.config.ringsContainerRadius)})`);
+				.attr('transform', `translate(${this.scaler.containerX(this.config.ringsContainerRadius)}, ${this.scaler.containerX(this.config.ringsContainerRadius)})`);
 
 		const ringsExit: D3Selection = ringsUpdate.exit().remove();
 
