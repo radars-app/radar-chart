@@ -1,17 +1,13 @@
-import { BehaviorSubject } from 'rxjs';
 import { D3Selection } from '../../models/types/d3-selection';
-import { Dimension } from '../../models/dimension';
 import { RingsConfig } from './rings.config';
 import { RingsModel } from './rings.model';
 import { SectorsRenderer } from '../sectors/sectors.renderer';
 import { convertToClassName } from '../helpers/convertToClassName';
-import { ScaleLinear, scaleLinear, selectAll } from 'd3';
 import { RingData } from 'src/models/ring-data';
 import { Scaler } from '../helpers/scaler';
 
 export class RingsRenderer {
 
-	private sectorsContainer: D3Selection;
 	private sectorsRenderer: SectorsRenderer;
 
 	constructor(
@@ -19,14 +15,12 @@ export class RingsRenderer {
 		private model: RingsModel,
 		private config: RingsConfig,
 		private scaler: Scaler) {
-			this.initContainers();
-			this.initBehavior();
 			this.sectorsRenderer = new SectorsRenderer(
-				this.sectorsContainer,
 				this.model.sectors,
 				this.config.sectorsConfig,
 				this.scaler
 			);
+			this.initBehavior();
 			this.initScaling();
 		}
 
@@ -35,16 +29,12 @@ export class RingsRenderer {
 	}
 
 	private initScaling(): void {
-		this.scaler.containerUpdaters.push(this.update.bind(this));
-	}
-
-	private initContainers(): void {
-		this.sectorsContainer = selectAll('g.ring-container');
+		this.scaler.containerUpdaters.push(this.render.bind(this));
 	}
 
 	private initBehavior(): void {
 		this.model.ringNames.subscribe((ringNames: string[]) => {
-			this.update();
+			this.render();
 		});
 	}
 
@@ -65,22 +55,38 @@ export class RingsRenderer {
 		return ringRadiuses;
 	}
 
-	private update(): void {
-		const rings: RingData[] = this.calculateRingsData();
-
-		const ringsUpdate: D3Selection = this.container.selectAll('g.ring-container')
-			.data(rings)
-			.attr('class', (ring: RingData) => `ring-container ${ring.className}`)
-			.attr('transform', `translate(${this.scaler.containerX(this.config.ringsContainerRadius)}, ${this.scaler.containerX(this.config.ringsContainerRadius)})`);
-
-		const ringsEnter: D3Selection = ringsUpdate
+	private enter(dataBinding: D3Selection): void {
+		dataBinding
 			.enter()
 				.append('g')
 				.attr('class', (ring: RingData) => `ring-container ${ring.className}`)
 				.attr('transform', `translate(${this.scaler.containerX(this.config.ringsContainerRadius)}, ${this.scaler.containerX(this.config.ringsContainerRadius)})`);
+	}
 
-		const ringsExit: D3Selection = ringsUpdate.exit().remove();
+	private update(dataBinding: D3Selection): void {
+		dataBinding
+			.attr('class', (ring: RingData) => `ring-container ${ring.className}`)
+			.attr('transform', `translate(${this.scaler.containerX(this.config.ringsContainerRadius)}, ${this.scaler.containerX(this.config.ringsContainerRadius)})`)
+				.each(function(ring: RingData): void {
+					const sectors: NodeList = this.childNodes;
+					sectors.forEach((sector: SVGElement) => {
+						sector.classList.value = `sector ${ring.className}`;
+					});
+				});
+	}
 
-		this.sectorsContainer = ringsEnter;
+	private exit(dataBinding: D3Selection): void {
+		dataBinding
+			.exit()
+				.remove();
+	}
+
+	private render(): void {
+		const ringsDataBind: D3Selection = this.container.selectAll('g.ring-container').data(this.calculateRingsData());
+		this.enter(ringsDataBind);
+		this.update(ringsDataBind);
+		this.exit(ringsDataBind);
+
+		this.sectorsRenderer.render();
 	}
 }

@@ -4,8 +4,6 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Dimension } from '../../models/dimension';
-import { ScaleLinear, scaleLinear } from 'd3';
-import { SectorsRenderer } from '../sectors/sectors.renderer';
 import { Scaler } from '../helpers/scaler';
 
 export class RadarChartRenderer {
