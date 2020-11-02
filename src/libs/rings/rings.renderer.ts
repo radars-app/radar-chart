@@ -4,32 +4,40 @@ import { RingsModel } from './rings.model';
 import { SectorsRenderer } from '../sectors/sectors.renderer';
 import { convertToClassName } from '../helpers/convertToClassName';
 import { RingData } from 'src/models/ring-data';
-import { Scaler } from '../helpers/scaler';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Dimension } from 'src/models/dimension';
 
 export class RingsRenderer {
+
+	private outerRingRadius: number;
 
 	private sectorsRenderer: SectorsRenderer;
 
 	constructor(
 		private container: D3Selection,
 		private model: RingsModel,
-		private config: RingsConfig,
-		private scaler: Scaler) {
+		public readonly config$: BehaviorSubject<RingsConfig>,
+		private range$: BehaviorSubject<Dimension>) {
 			this.sectorsRenderer = new SectorsRenderer(
 				this.model.sectors,
-				this.config.sectorsConfig,
-				this.scaler
+				new BehaviorSubject(this.config.sectorsConfig),
+				this.range$
 			);
+			this.subscribeConfig();
 			this.initBehavior();
-			this.initScaling();
+			this.initSizing();
 		}
+
+	private get config(): RingsConfig {
+		return this.config$.getValue();
+	}
+
+	private get range(): Dimension {
+		return this.range$.getValue();
+	}
 
 	private get ringNames(): string[] {
 		return this.model.ringNames.getValue();
-	}
-
-	private initScaling(): void {
-		this.scaler.containerUpdaters.push(this.render.bind(this));
 	}
 
 	private initBehavior(): void {
@@ -38,8 +46,21 @@ export class RingsRenderer {
 		});
 	}
 
-	private calculateRingsData(): RingData[] {
-		const deltaRadius: number = this.config.ringsContainerRadius / this.ringNames.length;
+	private subscribeConfig(): void {
+		this.config$.subscribe((config: RingsConfig) => {
+			this.sectorsRenderer.config$.next(config.sectorsConfig);
+			this.render();
+		});
+	}
+
+	private initSizing(): void {
+		this.range$.subscribe(() => {
+			this.render();
+		});
+	}
+
+	private calculateRingsRadiuses(): RingData[] {
+		const deltaRadius: number = this.outerRingRadius / this.ringNames.length;
 
 		const ringRadiuses: RingData[] = this.ringNames.map((name: string, index: number) => {
 			return {
@@ -60,13 +81,13 @@ export class RingsRenderer {
 			.enter()
 				.append('g')
 				.attr('class', (ring: RingData) => `ring-container ${ring.className}`)
-				.attr('transform', `translate(${this.scaler.containerX(this.config.ringsContainerRadius)}, ${this.scaler.containerX(this.config.ringsContainerRadius)})`);
+				.attr('transform', `translate(${this.outerRingRadius}, ${this.outerRingRadius})`);
 	}
 
 	private update(dataBinding: D3Selection): void {
 		dataBinding
 			.attr('class', (ring: RingData) => `ring-container ${ring.className}`)
-			.attr('transform', `translate(${this.scaler.containerX(this.config.ringsContainerRadius)}, ${this.scaler.containerX(this.config.ringsContainerRadius)})`)
+			.attr('transform', `translate(${this.outerRingRadius}, ${this.outerRingRadius})`)
 				.each(function(ring: RingData): void {
 					const sectors: NodeList = this.childNodes;
 					sectors.forEach((sector: SVGElement) => {
@@ -82,7 +103,8 @@ export class RingsRenderer {
 	}
 
 	private render(): void {
-		const ringsDataBind: D3Selection = this.container.selectAll('g.ring-container').data(this.calculateRingsData());
+		this.outerRingRadius = Math.min(this.range.width, this.range.height) / 2;
+		const ringsDataBind: D3Selection = this.container.selectAll('g.ring-container').data(this.calculateRingsRadiuses());
 		this.enter(ringsDataBind);
 		this.update(ringsDataBind);
 		this.exit(ringsDataBind);

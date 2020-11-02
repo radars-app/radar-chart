@@ -1,5 +1,5 @@
 import { select } from 'd3';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, config } from 'rxjs';
 import { RadarChartConfig } from './libs/radar-chart/radar-chart.config';
 import { RadarChartModel } from './libs/radar-chart/radar-chart.model';
 import { RadarChartRenderer } from './libs/radar-chart/radar-chart.renderer';
@@ -18,12 +18,18 @@ model.rings.sectors.sectorNames.next([
 	'Techniques'
 ]);
 
+const lightConfig: RadarChartConfig = new RadarChartConfig();
+const darkConfig: RadarChartConfig = new RadarChartConfig();
+darkConfig.backgroundColor = '#2D3443';
+darkConfig.ringsConfig.sectorsConfig.textColor = '#5E6670';
+darkConfig.ringsConfig.sectorsConfig.dividerColor = '#5E6670';
+
+const config$: BehaviorSubject<RadarChartConfig> = new BehaviorSubject<RadarChartConfig>(lightConfig);
+
 const size$: BehaviorSubject<Dimension> = new BehaviorSubject({
-	width: document.body.clientWidth,
+	width: document.body.clientWidth - 17,
 	height: window.innerHeight
 });
-
-const config$: BehaviorSubject<RadarChartConfig> = new BehaviorSubject<RadarChartConfig>(new RadarChartConfig);
 
 window.onresize = ($event: Event) => {
 	size$.next({
@@ -33,7 +39,6 @@ window.onresize = ($event: Event) => {
 };
 
 export function startDemo(): void {
-
 	const renderer: RadarChartRenderer = new RadarChartRenderer(
 		select('svg.radar-chart'),
 		model,
@@ -51,4 +56,22 @@ select('button.change-ringNames')
 select('button.change-sectorNames')
 	.on('click', () => {
 		model.rings.sectors.sectorNames.next(['Tech', 'Mech', 'Heh']);
+	});
+
+enum Theme {
+	Light = 'light-theme',
+	Dark = 'dark-theme'
+}
+
+select('select.change-theme')
+	.on('change', ($event: Event) => {
+		const selectElement: HTMLSelectElement = $event.target as HTMLSelectElement;
+		switch (selectElement.value) {
+			case Theme.Light:
+				config$.next(lightConfig);
+			break;
+			case Theme.Dark:
+				config$.next(darkConfig);
+			break;
+		}
 	});

@@ -4,11 +4,12 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Dimension } from '../../models/dimension';
-import { Scaler } from '../helpers/scaler';
+import { scaleLinear, ScaleLinear } from 'd3';
 
 export class RadarChartRenderer {
 
-	private scaler: Scaler;
+	private sizeX: ScaleLinear<number, number>;
+	private ringsRange$: BehaviorSubject<Dimension> = new BehaviorSubject(null);
 
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
@@ -20,7 +21,7 @@ export class RadarChartRenderer {
 		private size$: BehaviorSubject<Dimension>
 	) {
 		this.initContainers();
-		this.initScaling();
+		this.initSizing();
 	}
 
 	private get config(): RadarChartConfig {
@@ -28,36 +29,53 @@ export class RadarChartRenderer {
 	}
 
 	public start(): void {
-		this.config$.subscribe(() => {
-			this.ringsRenderer = new RingsRenderer(
-				this.ringsContainer,
-				this.model.rings,
-				this.config.ringsConfig,
-				this.scaler
-			);
+		this.ringsRenderer = new RingsRenderer(
+			this.ringsContainer,
+			this.model.rings,
+			new BehaviorSubject(this.config.ringsConfig),
+			this.ringsRange$
+		);
+
+		this.subscribeConfig();
+	}
+
+	private subscribeConfig(): void {
+		this.config$.subscribe((config: RadarChartConfig) => {
+			this.ringsRenderer.config$.next(config.ringsConfig);
+			this.render();
 		});
 	}
 
-	private initScaling(): void {
-		this.scaler = new Scaler(this.size$);
-		this.scaler.containerUpdaters.push(this.update.bind(this));
-		this.scaler.startContainerResizer();
+	private initSizing(): void {
+		this.size$.subscribe((size: Dimension) => {
+			this.calculateRange(size);
+			this.render();
+		});
+	}
+
+	private calculateRange(size: Dimension): void {
+		this.sizeX = scaleLinear()
+			.domain([0, this.config.containerDomainX])
+			.range([0, size.width]);
+		this.ringsRange$.next({
+			width: size.width - this.sizeX(this.config.transformX),
+			height: size.height - this.sizeX(this.config.offsetY * 2)
+		});
 	}
 
 	private initContainers(): void {
-		this.container
-			.style('background', this.config.backgroundColor);
 		this.ringsContainer = this.container.append('g')
 			.attr('class', 'radar-chart__rings');
 	}
 
-	private update(): void {
+	private render(): void {
 		const size: Dimension = this.size$.getValue();
 		this.container
+			.style('background', this.config.backgroundColor)
 			.attr('width', size.width)
-			.attr('height', () => this.scaler.containerX(this.config.minHeight));
+			.attr('height', size.height);
 
 		this.ringsContainer
-			.attr('transform', `translate(${this.scaler.containerX(this.config.transformX)}, ${this.scaler.containerX(this.config.transformY)})`);
+			.attr('transform', `translate(${this.sizeX(this.config.transformX)}, ${this.config.offsetY})`);
 	}
 }

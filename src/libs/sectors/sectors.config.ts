@@ -1,6 +1,6 @@
 export class SectorsConfig {
-	public readonly dividerColor: string = '#99A6B5';
-	public readonly textColor: string = '#6B7885';
+	public dividerColor: string = '#99A6B5';
+	public textColor: string = '#6B7885';
 
 	constructor() {
 		this.dividerColor = '#99A6B5';

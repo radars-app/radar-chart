@@ -2,20 +2,24 @@ import { pie, arc, select, Arc, selectAll } from 'd3';
 import { D3Selection } from '../../models/types/d3-selection';
 import { D3Pie } from '../../models/types/d3-pie';
 import { D3PieData } from '../../models/types/d3-pie-data';
-import { RingData } from 'src/models/ring-data';
+import { RingData as RingData } from 'src/models/ring-data';
 import { SectorsModel } from './sectors.model';
 import { SectorsConfig } from './sectors.config';
-import { Scaler } from '../helpers/scaler';
+import { Dimension } from 'src/models/dimension';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 export class SectorsRenderer {
 
 	constructor(
 		private model: SectorsModel,
-		private config: SectorsConfig,
-		private scaler: Scaler
+		public readonly config$: BehaviorSubject<SectorsConfig>,
+		private range$: BehaviorSubject<Dimension>
 	) {
-		this.initScaling();
 		this.initBehavior();
+	}
+
+	private get config(): SectorsConfig {
+		return this.config$.getValue();
 	}
 
 	private get sectorNames(): string[] {
@@ -24,17 +28,27 @@ export class SectorsRenderer {
 
 	public render(): void {
 		const sectors: D3PieData = this.calculateSectorsData();
-		this.enter(sectors);
-		this.update(sectors);
-		this.exit(sectors);
-	}
 
-	private initScaling(): void {
-		this.scaler.containerUpdaters.push(this.render.bind(this));
+		selectAll('g.ring-container')
+			.each((ringRadiuses: RingData) => {
+					const container: D3Selection = select(`g.ring-container.${ringRadiuses.className}`)
+						.selectAll('path.sector')
+						.data(sectors);
+					this.enter(container, ringRadiuses);
+					this.update(container, ringRadiuses);
+					this.exit(container);
+				}
+			);
 	}
 
 	private initBehavior(): void {
 		this.model.sectorNames.subscribe((sectorNames: string[]) => {
+			this.render();
+		});
+	}
+
+	private initSizing(): void {
+		this.range$.subscribe(() => {
 			this.render();
 		});
 	}
@@ -47,43 +61,29 @@ export class SectorsRenderer {
 
 	private getArcByRing(ring: RingData): Arc<any, any> {
 		return arc()
-			.innerRadius(this.scaler.containerX(ring.radius.innerRadius))
-			.outerRadius(this.scaler.containerX(ring.radius.outerRadius));
+			.innerRadius(ring.radius.innerRadius)
+			.outerRadius(ring.radius.outerRadius);
 	}
 
-	private enter(sectors: D3PieData): void {
-		selectAll('g.ring-container')
-			.each((ring: RingData) => {
-				select(`g.ring-container.${ring.className}`)
-					.selectAll('path.sector')
-					.data(sectors)
-						.enter()
-							.append('path')
-							.attr('d', this.getArcByRing(ring))
-							.attr('class', `sector ${ring.className}`)
-							.attr('fill', 'transparent')
-							.attr('stroke', this.config.dividerColor);
-			});
+	private enter(container: D3Selection, ring: RingData): void {
+		container
+			.enter()
+				.append('path')
+				.attr('d', this.getArcByRing(ring))
+				.attr('class', `sector ${ring.className}`)
+				.attr('fill', 'transparent')
+				.attr('stroke', this.config.dividerColor);
 	}
 
-	private update(sectors: D3PieData): void {
-		selectAll('g.ring-container')
-			.each((ring: RingData) => {
-					selectAll(`path.sector.${ring.className}`)
-					.data(sectors)
-						.attr('d', this.getArcByRing(ring))
-						.attr('class', `sector ${ring.className}`)
-						.attr('fill', 'transparent')
-						.attr('stroke', this.config.dividerColor);
-			});
+	private update(container: D3Selection, ring: RingData): void {
+		container
+			.attr('d', this.getArcByRing(ring))
+			.attr('class', `sector ${ring.className}`)
+			.attr('fill', 'transparent')
+			.attr('stroke', this.config.dividerColor);
 	}
 
-	private exit(sectors: D3PieData): void {
-		selectAll('g.ring-container')
-			.each((ring: RingData) => {
-					selectAll(`path.sector.${ring.className}`)
-					.data(sectors)
-						.exit().remove();
-			});
+	private exit(container: D3Selection): void {
+		container.exit().remove();
 	}
 }
