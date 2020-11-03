@@ -1,4 +1,4 @@
-import { pie, arc, select, Arc, selectAll } from 'd3';
+import { pie, arc, select, Arc, selectAll, scaleOrdinal } from 'd3';
 import { D3Selection } from '../../models/types/d3-selection';
 import { D3Pie } from '../../models/types/d3-pie';
 import { D3PieData } from '../../models/types/d3-pie-data';
@@ -7,6 +7,7 @@ import { SectorsModel } from './sectors.model';
 import { SectorsConfig } from './sectors.config';
 import { Dimension } from 'src/models/dimension';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { LabelsRenderer } from '../labels/labels.renderer';
 
 export class SectorsRenderer {
 
@@ -31,24 +32,17 @@ export class SectorsRenderer {
 
 		selectAll('g.ring-container')
 			.each((ringRadiuses: RingData) => {
-					const container: D3Selection = select(`g.ring-container.${ringRadiuses.className}`)
-						.selectAll('path.sector')
-						.data(sectors);
-					this.enter(container, ringRadiuses);
-					this.update(container, ringRadiuses);
-					this.exit(container);
+					const containerToUpdate: D3Selection = select(`g.ring-container.${ringRadiuses.className}`).selectAll('path.sector').data(sectors);
+					const containerToExit: D3Selection = selectAll(`g.sector-container.${ringRadiuses.className}`).data(sectors);
+					this.enter(containerToUpdate, ringRadiuses);
+					this.update(containerToUpdate, ringRadiuses);
+					this.exit(containerToExit);
 				}
 			);
 	}
 
 	private initBehavior(): void {
 		this.model.sectorNames.subscribe((sectorNames: string[]) => {
-			this.render();
-		});
-	}
-
-	private initSizing(): void {
-		this.range$.subscribe(() => {
 			this.render();
 		});
 	}
@@ -68,6 +62,8 @@ export class SectorsRenderer {
 	private enter(container: D3Selection, ring: RingData): void {
 		container
 			.enter()
+				.append('g')
+				.attr('class', `sector-container ${ring.className}`)
 				.append('path')
 				.attr('d', this.getArcByRing(ring))
 				.attr('class', `sector ${ring.className}`)

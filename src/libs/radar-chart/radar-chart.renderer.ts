@@ -57,9 +57,10 @@ export class RadarChartRenderer {
 		this.sizeX = scaleLinear()
 			.domain([0, this.config.containerDomainX])
 			.range([0, size.width]);
+
 		this.ringsRange$.next({
 			width: size.width - this.sizeX(this.config.transformX),
-			height: size.height - this.sizeX(this.config.offsetY * 2)
+			height: size.height - this.config.offsetY * 2
 		});
 	}
 

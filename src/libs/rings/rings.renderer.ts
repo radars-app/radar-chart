@@ -91,7 +91,7 @@ export class RingsRenderer {
 				.each(function(ring: RingData): void {
 					const sectors: NodeList = this.childNodes;
 					sectors.forEach((sector: SVGElement) => {
-						sector.classList.value = `sector ${ring.className}`;
+						sector.classList.value = `sector-container ${ring.className}`;
 					});
 				});
 	}

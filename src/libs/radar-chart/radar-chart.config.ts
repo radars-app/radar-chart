@@ -6,10 +6,12 @@ export class RadarChartConfig {
 	public transformX: number;
 	public offsetY: number;
 	public readonly containerDomainX: number;
+	public readonly containerDomainY: number;
 	public readonly ringsConfig: RingsConfig;
 
 	constructor() {
 		this.containerDomainX = 1366;
+		this.containerDomainY = 658;
 		this.ringsConfig = new RingsConfig();
 		this.transformX = 542;
 		this.offsetY = 18;
