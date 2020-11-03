@@ -18,7 +18,8 @@
 		"esModuleInterop": true
 	},
 	"include": [
-		"*.ts", "src/index.ts"
+		"./**/*.ts",
+		"src/index.ts"
 	],
 	"exclude": [
 			"node_modules",

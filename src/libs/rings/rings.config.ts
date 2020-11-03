@@ -1,9 +1,9 @@
-import { SectorsConfig } from '../sectors/sectors.config';
-
 export class RingsConfig {
-	public readonly sectorsConfig: SectorsConfig;
+	public ringsColor: string;
+	public strokeWidth: number;
 
 	constructor() {
-		this.sectorsConfig = new SectorsConfig();
+		this.ringsColor = '#99A6B5';
+		this.strokeWidth = 1;
 	}
 }

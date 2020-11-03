@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 
-export class SectorsModel {
+export class DividersModel {
 
 	public readonly sectorNames: BehaviorSubject<string[]>;
 

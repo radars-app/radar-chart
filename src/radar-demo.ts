@@ -7,7 +7,7 @@ import { Dimension } from './models/dimension';
 
 const model: RadarChartModel = new RadarChartModel();
 model.rings.ringNames.next(['Hold', 'Assess', 'Trial', 'Adopt'].reverse());
-model.rings.sectors.sectorNames.next([
+model.dividers.sectorNames.next([
 	'Technologies',
 	'Startups',
 	'Libraries',
@@ -20,9 +20,13 @@ model.rings.sectors.sectorNames.next([
 
 const lightConfig: RadarChartConfig = new RadarChartConfig();
 const darkConfig: RadarChartConfig = new RadarChartConfig();
-darkConfig.backgroundColor = '#2D3443';
-darkConfig.ringsConfig.sectorsConfig.textColor = '#5E6670';
-darkConfig.ringsConfig.sectorsConfig.dividerColor = '#5E6670';
+
+const primaryColor: string = '#5E6670';
+const secondaryColor: string = '#2D3443';
+darkConfig.backgroundColor = secondaryColor;
+darkConfig.ringsConfig.ringsColor = primaryColor;
+darkConfig.dividersConfig.textColor = primaryColor;
+darkConfig.dividersConfig.dividerColor = primaryColor;
 
 const config$: BehaviorSubject<RadarChartConfig> = new BehaviorSubject<RadarChartConfig>(lightConfig);
 
@@ -55,7 +59,7 @@ select('button.change-ringNames')
 
 select('button.change-sectorNames')
 	.on('click', () => {
-		model.rings.sectors.sectorNames.next(['Tech', 'Mech', 'Heh']);
+		model.dividers.sectorNames.next(['Tech', 'Mech', 'Heh']);
 	});
 
 enum Theme {

@@ -5,6 +5,8 @@ import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Dimension } from '../../models/dimension';
 import { scaleLinear, ScaleLinear } from 'd3';
+import { DividersRenderer } from '../dividers/dividers.renderer';
+import { Line } from 'src/models/line';
 
 export class RadarChartRenderer {
 
@@ -13,6 +15,9 @@ export class RadarChartRenderer {
 
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
+
+	private dividersRenderer: DividersRenderer;
+	private dividersContainer: D3Selection;
 
 	constructor(
 		private container: D3Selection,
@@ -36,12 +41,20 @@ export class RadarChartRenderer {
 			this.ringsRange$
 		);
 
+		this.dividersRenderer = new DividersRenderer(
+			this.dividersContainer,
+			this.model.dividers,
+			new BehaviorSubject(this.config.dividersConfig),
+			this.ringsRange$
+		);
+
 		this.subscribeConfig();
 	}
 
 	private subscribeConfig(): void {
 		this.config$.subscribe((config: RadarChartConfig) => {
 			this.ringsRenderer.config$.next(config.ringsConfig);
+			this.dividersRenderer.config$.next(config.dividersConfig);
 			this.render();
 		});
 	}
@@ -59,7 +72,7 @@ export class RadarChartRenderer {
 			.range([0, size.width]);
 
 		this.ringsRange$.next({
-			width: size.width - this.sizeX(this.config.transformX),
+			width: size.width - this.sizeX(this.config.transformX) - this.config.offsetX * 2,
 			height: size.height - this.config.offsetY * 2
 		});
 	}
@@ -67,6 +80,9 @@ export class RadarChartRenderer {
 	private initContainers(): void {
 		this.ringsContainer = this.container.append('g')
 			.attr('class', 'radar-chart__rings');
+
+		this.dividersContainer = this.container.append('g')
+			.attr('class', 'radar-chart__dividers');
 	}
 
 	private render(): void {
@@ -77,6 +93,9 @@ export class RadarChartRenderer {
 			.attr('height', size.height);
 
 		this.ringsContainer
-			.attr('transform', `translate(${this.sizeX(this.config.transformX)}, ${this.config.offsetY})`);
+			.attr('transform', `translate(${this.sizeX(this.config.transformX)  + this.config.offsetX}, ${this.config.offsetY})`);
+
+		this.dividersContainer
+			.attr('transform', `translate(${this.sizeX(this.config.transformX)  + this.config.offsetX}, ${this.config.offsetY})`);
 	}
 }
