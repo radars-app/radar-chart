@@ -1,5 +1,5 @@
 import { select } from 'd3';
-import { BehaviorSubject, config } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { RadarChartConfig } from './libs/radar-chart/radar-chart.config';
 import { RadarChartModel } from './libs/radar-chart/radar-chart.model';
 import { RadarChartRenderer } from './libs/radar-chart/radar-chart.renderer';
@@ -25,7 +25,7 @@ const primaryColor: string = '#5E6670';
 const secondaryColor: string = '#2D3443';
 darkConfig.backgroundColor = secondaryColor;
 darkConfig.ringsConfig.ringsColor = primaryColor;
-darkConfig.dividersConfig.textColor = primaryColor;
+darkConfig.ringsConfig.labelsConfig.textColor = primaryColor;
 darkConfig.dividersConfig.dividerColor = primaryColor;
 
 const config$: BehaviorSubject<RadarChartConfig> = new BehaviorSubject<RadarChartConfig>(lightConfig);
@@ -52,14 +52,30 @@ export function startDemo(): void {
 	renderer.start();
 }
 
+function* getRingNames(): Generator {
+	while (true) {
+		yield ['Deployment', 'Implementation'];
+		yield ['Deploy', 'Demo', 'Build', 'Develop'];
+	}
+}
+const ringNamesGenerator: Generator = getRingNames();
 select('button.change-ringNames')
 	.on('click', () => {
-		model.rings.ringNames.next(['Build', 'Trials']);
+		model.rings.ringNames.next(ringNamesGenerator.next().value);
 	});
 
+function* getSectorNames(): Generator {
+	while (true) {
+		yield [	'Technologies', 'Startups', 'Libraries'];
+		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks', 'Tools', 'Platforms', 'Techniques'];
+		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks', 'Tools', ];
+		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks'];
+	}
+}
+const sectorNamesGenerator: Generator = getSectorNames();
 select('button.change-sectorNames')
 	.on('click', () => {
-		model.dividers.sectorNames.next(['Tech', 'Mech', 'Heh']);
+		model.dividers.sectorNames.next(sectorNamesGenerator.next().value);
 	});
 
 enum Theme {

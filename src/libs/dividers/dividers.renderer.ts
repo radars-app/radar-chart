@@ -1,33 +1,41 @@
 import { Dimension } from '../../models/dimension';
-import { DividersModel } from './dividers.model';
 import { DividersConfig } from './dividers.config';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { D3Selection } from 'src/models/types/d3-selection';
 import { Divider } from 'src/models/divider';
 import './dividers.scss';
+import { RadarChartModel } from '../radar-chart/radar-chart.model';
+import { LabelsRenderer } from '../labels/labels.renderer';
+import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 
 export class DividersRenderer {
+
+	private isLabeledDividerFound: boolean;
+	private labelsRenderer: LabelsRenderer;
 
 	private outerRingRadius: number;
 	private dividers: Divider[];
 
 	constructor(
 		private container: D3Selection,
-		private model: DividersModel, // chart model
-		public readonly config$: BehaviorSubject<DividersConfig>,
+		private model: RadarChartModel,
+		public readonly config$: BehaviorSubject<RadarChartConfig>,
 		private range$: BehaviorSubject<Dimension>
 	) {
+		this.labelsRenderer = new LabelsRenderer(
+			this.config
+		);
 		this.subscribeConfig();
 		this.initBehavior();
 		this.initSizing();
 	}
 
-	private get config(): DividersConfig {
+	private get config(): RadarChartConfig {
 		return this.config$.getValue();
 	}
 
 	private get sectorNames(): string[] {
-		return this.model.sectorNames.getValue();
+		return this.model.dividers.sectorNames.getValue();
 	}
 
 	private get range(): Dimension {
@@ -35,13 +43,18 @@ export class DividersRenderer {
 	}
 
 	private initBehavior(): void {
-		this.model.sectorNames.subscribe((sectorNames: string[]) => {
+		this.model.dividers.sectorNames.subscribe((sectorNames: string[]) => {
 			this.render();
+		});
+
+		this.model.rings.ringNames.subscribe((ringNames: string[]) => {
+			this.renderLabels(ringNames);
 		});
 	}
 
 	private subscribeConfig(): void {
-		this.config$.subscribe((config: DividersConfig) => {
+		this.config$.subscribe((config: RadarChartConfig) => {
+			this.labelsRenderer.config = config;
 			this.render();
 		});
 	}
@@ -55,24 +68,43 @@ export class DividersRenderer {
 	private calculateDividers(): void {
 		this.outerRingRadius = Math.min(this.range.width, this.range.height) / 2;
 		const rotationDelta: number = 360 / this.sectorNames.length;
+		const startRotation: number = 270;
 
-		let currentRotation: number = -rotationDelta;
-		this.dividers = this.sectorNames.map((sectorName: string, index: number) => {
+		let currentRotation: number = startRotation - rotationDelta;
+		let nextRotation: number = startRotation;
+		this.isLabeledDividerFound = false;
+		this.dividers = this.sectorNames.map((sectorName: string) => {
+			currentRotation += rotationDelta;
+			nextRotation += rotationDelta;
 			return {
 				label: sectorName,
-				isLabeled: index === 0,
-				rotation: currentRotation += rotationDelta
+				isLabeled: this.isLabeledDividerFound ? false : this.isLabeledDivider(currentRotation, nextRotation, rotationDelta),
+				rotation: currentRotation
 			};
 		});
+	}
+
+	private isLabeledDivider(currentRotation: number, nextRotation: number, rotationDelta: number): boolean {
+		const isCurrentDividerLabeled: boolean = Math.abs(360 - currentRotation) <= Math.abs(360 - nextRotation);
+		if (isCurrentDividerLabeled) {
+			this.isLabeledDividerFound = true;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private getContainerTransform(divider: Divider): string {
+		return 	`translate(${this.outerRingRadius}, ${this.outerRingRadius}) rotate(${divider.rotation}, 0, 0)`;
 	}
 
 	private update(container: D3Selection): void {
 		container
 			.attr('class', 'divider')
-			.attr('x1', this.outerRingRadius).attr('y1', this.outerRingRadius)
-			.attr('x2', this.outerRingRadius * 2).attr('y2', this.outerRingRadius)
-			.attr('stroke', this.config.dividerColor)
-			.attr('stroke-width', this.config.strokeWidth);
+			.attr('x1', 0).attr('y1', 0)
+			.attr('x2', this.outerRingRadius).attr('y2', 0)
+			.attr('stroke', this.config.dividersConfig.dividerColor)
+			.attr('stroke-width', this.config.dividersConfig.strokeWidth);
 	}
 
 	private enter(container: D3Selection): void {
@@ -80,6 +112,8 @@ export class DividersRenderer {
 			.enter()
 				.append('g')
 					.attr('class', 'divider-container')
+					.classed('labeled', (divider: Divider) => divider.isLabeled)
+					.attr('transform', (divider: Divider) => this.getContainerTransform(divider))
 						.append('line');
 
 		this.update(dividersToEnter);
@@ -91,12 +125,21 @@ export class DividersRenderer {
 
 	private render(): void {
 		this.calculateDividers();
-		const dividerContainer: D3Selection = this.container.selectAll('g.divider-container').data(this.dividers)
-			.attr('transform', (divider: Divider) => `rotate(${divider.rotation}, ${this.outerRingRadius}, ${this.outerRingRadius})`);
+		const dividerContainer: D3Selection = this.container.selectAll('g.divider-container').data(this.dividers);
 		const container: D3Selection = this.container.selectAll('g.divider-container > line.divider').data(this.dividers);
 
 		this.enter(container);
 		this.update(container);
+		dividerContainer
+			.classed('labeled', (divider: Divider) => divider.isLabeled)
+			.attr('transform', (divider: Divider) => this.getContainerTransform(divider));
 		this.exit(dividerContainer);
+
+		this.renderLabels(this.model.rings.ringNames.getValue());
+	}
+
+	private renderLabels(ringNames: string[]): void {
+		const labeledContainer: D3Selection = this.container.select('g.divider-container.labeled');
+		this.labelsRenderer.render(labeledContainer, this.outerRingRadius, ringNames);
 	}
 }
