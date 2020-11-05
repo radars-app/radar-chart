@@ -4,7 +4,8 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Dimension } from '../../models/dimension';
-import { scaleLinear, ScaleLinear } from 'd3';
+import { scaleLinear, ScaleLinear, select } from 'd3';
+import { zoom } from 'd3-zoom';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 
 export class RadarChartRenderer {
@@ -19,13 +20,14 @@ export class RadarChartRenderer {
 	private dividersContainer: D3Selection;
 
 	constructor(
-		private container: D3Selection,
+		private svg: D3Selection,
 		private model: RadarChartModel,
 		private config$: BehaviorSubject<RadarChartConfig>,
 		private size$: BehaviorSubject<Dimension>
 	) {
 		this.initContainers();
 		this.initSizing();
+		this.initZoom();
 	}
 
 	private get config(): RadarChartConfig {
@@ -65,6 +67,12 @@ export class RadarChartRenderer {
 		});
 	}
 
+	private initZoom(): void {
+		this.svg.call(zoom().on('zoom', function (event: any) {
+			select('svg.radar-chart > g.radar-chart__zoom-container').attr('transform', event.transform);
+		}));
+	}
+
 	private calculateRange(size: Dimension): void {
 		this.sizeX = scaleLinear()
 			.domain([0, this.config.containerDomainX])
@@ -77,16 +85,19 @@ export class RadarChartRenderer {
 	}
 
 	private initContainers(): void {
-		this.ringsContainer = this.container.append('g')
+		this.svg.append('g')
+			.attr('class', 'radar-chart__zoom-container');
+
+		this.ringsContainer = this.svg.select('g').append('g')
 			.attr('class', 'radar-chart__rings');
 
-		this.dividersContainer = this.container.append('g')
+		this.dividersContainer = this.svg.select('g').append('g')
 			.attr('class', 'radar-chart__dividers');
 	}
 
 	private render(): void {
 		const size: Dimension = this.size$.getValue();
-		this.container
+		this.svg
 			.style('background', this.config.backgroundColor)
 			.attr('width', size.width)
 			.attr('height', size.height);

@@ -56,6 +56,7 @@ function* getRingNames(): Generator {
 	while (true) {
 		yield ['Deployment', 'Implementation'];
 		yield ['Deploy', 'Demo', 'Build', 'Develop'];
+		yield ['Deploy', 'Demo', 'Build', 'Develop', 'DevOps', 'Render'];
 	}
 }
 const ringNamesGenerator: Generator = getRingNames();
@@ -66,10 +67,11 @@ select('button.change-ringNames')
 
 function* getSectorNames(): Generator {
 	while (true) {
-		yield [	'Technologies', 'Startups', 'Libraries'];
-		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks', 'Tools', 'Platforms', 'Techniques'];
+		yield [	'Technologies', 'Startups', 'Libraries' ];
+		yield [	'Technologies', 'Startups' ];
+		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks', 'Tools', 'Platforms', 'Techniques' ];
 		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks', 'Tools', ];
-		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks'];
+		yield [	'Technologies', 'Startups', 'Libraries', 'Devices', 'Languages-And-Frameworks' ];
 	}
 }
 const sectorNamesGenerator: Generator = getSectorNames();

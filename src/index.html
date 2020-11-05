@@ -7,7 +7,7 @@
 	<title>Demo</title>
 </head>
 <body style="margin: 0;">
-	<div style="position: absolute;">
+	<div style="position: absolute; z-index: 1;">
 		<button class="change-ringNames">change ringNames</button>
 		<button class="change-sectorNames">change sectorNames</button>
 		<select class="change-theme">
@@ -19,6 +19,6 @@
 			</option>
 		</select>
 	</div>
-	<svg class="radar-chart" style="display: block;"></svg>
+	<svg class="radar-chart" style="display: block; z-index: 0;"></svg>
 </body>
 </html>

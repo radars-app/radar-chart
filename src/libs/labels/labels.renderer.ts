@@ -1,4 +1,5 @@
 import { select, selectAll } from 'd3';
+import { Dimension } from 'src/models/dimension';
 import { RingNameLabel } from 'src/models/ring-name-label';
 import { D3Selection } from 'src/models/types/d3-selection';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
@@ -44,15 +45,16 @@ export class LabelsRenderer {
 
 		const config: RadarChartConfig = this.config;
 		textContainerAgain.each(function(labels: RingNameLabel, index: number) {
-			const rectBounding: DOMRect = this.getBoundingClientRect();
-			console.log(rectBounding)
+			const rect: Dimension = {
+				width: this.getComputedTextLength(),
+				height: 12
+			};
 			select(rectContainerAgain.nodes()[index])
-				.attr('width', rectBounding.width)
-				.attr('height', rectBounding.height)
+				.attr('width', this.getComputedTextLength() + 6)
+				.attr('height', 12)
 				.attr('fill', config.backgroundColor)
-				.attr('transform', (label: RingNameLabel) => `translate(${label.x - rectBounding.width/2}, ${-rectBounding.height / 2})`)
+				.attr('transform', (label: RingNameLabel) => `translate(${label.x - rect.width / 2 - 3}, ${-rect.height / 2})`);
 		});
-		
 	}
 
 	private updateRects(container: D3Selection): D3Selection {
