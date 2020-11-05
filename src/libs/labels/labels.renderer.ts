@@ -44,7 +44,7 @@ export class LabelsRenderer {
 		const textContainerAgain: D3Selection = textContainer.selectAll('text.label--ring-name');
 
 		const config: RadarChartConfig = this.config;
-		textContainerAgain.each(function(labels: RingNameLabel, index: number) {
+		textContainerAgain.each(function(labels: RingNameLabel, index: number): void {
 			const rect: Dimension = {
 				width: this.getComputedTextLength(),
 				height: 12

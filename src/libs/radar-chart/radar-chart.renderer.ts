@@ -68,7 +68,7 @@ export class RadarChartRenderer {
 	}
 
 	private initZoom(): void {
-		this.svg.call(zoom().on('zoom', function (event: any) {
+		this.svg.call(zoom().on('zoom', function (event: any): void {
 			select('svg.radar-chart > g.radar-chart__zoom-container').attr('transform', event.transform);
 		}));
 	}
