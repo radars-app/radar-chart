@@ -104,7 +104,7 @@
 		],
 		"no-invalid-this": true,
 		"no-magic-numbers": [
-			true,
+			false,
 			-1,
 			0,
 			1,

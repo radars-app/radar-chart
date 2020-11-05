@@ -3,9 +3,22 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
 	<title>Demo</title>
 </head>
-<body>
-	<svg class="radar-chart"></svg>
+<body style="margin: 0;">
+	<div style="position: absolute; z-index: 1;">
+		<button class="change-ringNames">change ringNames</button>
+		<button class="change-sectorNames">change sectorNames</button>
+		<select class="change-theme">
+			<option value="light-theme">
+				light-theme
+			</option>
+			<option value="dark-theme">
+				dark-theme
+			</option>
+		</select>
+	</div>
+	<svg class="radar-chart" style="display: block; z-index: 0;"></svg>
 </body>
 </html>
