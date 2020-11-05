@@ -2,9 +2,9 @@ import { D3Selection } from '../../models/types/d3-selection';
 import { RingsConfig } from './rings.config';
 import { RingsModel } from './rings.model';
 import { convertToClassName } from '../helpers/convert-to-class-name';
-import { Ring } from 'src/models/ring';
+import { Ring } from '../../models/ring';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Dimension } from 'src/models/dimension';
+import { Dimension } from '../../models/dimension';
 
 export class RingsRenderer {
 

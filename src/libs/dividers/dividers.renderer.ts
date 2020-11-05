@@ -1,12 +1,11 @@
 import { Dimension } from '../../models/dimension';
-import { DividersConfig } from './dividers.config';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { D3Selection } from 'src/models/types/d3-selection';
-import { Divider } from 'src/models/divider';
 import './dividers.scss';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
 import { LabelsRenderer } from '../labels/labels.renderer';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
+import { Divider } from '../../models/divider';
+import { D3Selection } from '../../models/types/d3-selection';
 
 export class DividersRenderer {
 

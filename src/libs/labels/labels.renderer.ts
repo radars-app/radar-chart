@@ -1,7 +1,7 @@
 import { select, selectAll } from 'd3';
-import { Dimension } from 'src/models/dimension';
-import { RingNameLabel } from 'src/models/ring-name-label';
-import { D3Selection } from 'src/models/types/d3-selection';
+import { Dimension } from '../../models/dimension';
+import { RingNameLabel } from '../../models/ring-name-label';
+import { D3Selection } from '../../models/types/d3-selection';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { LabelsConfig } from './labels.config';
 import './labels.scss';
