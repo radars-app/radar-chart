@@ -1,13 +1,17 @@
-import { DividersModel } from '../dividers/dividers.model';
-import { RingsModel } from '../rings/rings.model';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 export class RadarChartModel {
 
-	public readonly rings: RingsModel;
-	public readonly dividers: DividersModel;
+	public readonly rangeX$: BehaviorSubject<number>;
+	public readonly rangeY$: BehaviorSubject<number>;
+
+	public readonly sectorNames$: BehaviorSubject<string[]>;
+	public readonly ringNames$: BehaviorSubject<string[]>;
 
 	constructor() {
-		this.rings = new RingsModel();
-		this.dividers = new DividersModel();
+		this.rangeX$ = new BehaviorSubject(0);
+		this.rangeY$ = new BehaviorSubject(0);
+		this.sectorNames$ = new BehaviorSubject([]);
+		this.ringNames$ = new BehaviorSubject([]);
 	}
 }

@@ -6,8 +6,8 @@ import { RadarChartRenderer } from './libs/radar-chart/radar-chart.renderer';
 import { Dimension } from './models/dimension';
 
 const model: RadarChartModel = new RadarChartModel();
-model.rings.ringNames.next(['Hold', 'Assess', 'Trial', 'Adopt'].reverse());
-model.dividers.sectorNames.next([
+model.ringNames$.next(['Hold', 'Assess', 'Trial', 'Adopt'].reverse());
+model.sectorNames$.next([
 	'Technologies',
 	'Startups',
 	'Libraries',
@@ -62,7 +62,7 @@ function* getRingNames(): Generator {
 const ringNamesGenerator: Generator = getRingNames();
 select('button.change-ringNames')
 	.on('click', () => {
-		model.rings.ringNames.next(ringNamesGenerator.next().value);
+		model.ringNames$.next(ringNamesGenerator.next().value);
 	});
 
 function* getSectorNames(): Generator {
@@ -77,7 +77,7 @@ function* getSectorNames(): Generator {
 const sectorNamesGenerator: Generator = getSectorNames();
 select('button.change-sectorNames')
 	.on('click', () => {
-		model.dividers.sectorNames.next(sectorNamesGenerator.next().value);
+		model.sectorNames$.next(sectorNamesGenerator.next().value);
 	});
 
 enum Theme {

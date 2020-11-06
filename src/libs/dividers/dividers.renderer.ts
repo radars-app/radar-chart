@@ -34,7 +34,7 @@ export class DividersRenderer {
 	}
 
 	private get sectorNames(): string[] {
-		return this.model.dividers.sectorNames.getValue();
+		return this.model.sectorNames$.getValue();
 	}
 
 	private get range(): Dimension {
@@ -42,11 +42,11 @@ export class DividersRenderer {
 	}
 
 	private initBehavior(): void {
-		this.model.dividers.sectorNames.subscribe((sectorNames: string[]) => {
+		this.model.sectorNames$.subscribe((sectorNames: string[]) => {
 			this.render();
 		});
 
-		this.model.rings.ringNames.subscribe((ringNames: string[]) => {
+		this.model.ringNames$.subscribe((ringNames: string[]) => {
 			this.renderLabels(ringNames);
 		});
 	}
