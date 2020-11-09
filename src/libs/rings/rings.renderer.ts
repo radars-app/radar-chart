@@ -12,7 +12,7 @@ export class RingsRenderer {
 
 	private subscriptions: SubscriptionPool;
 
-	private rings: Ring[];
+	private ringsRadiuses: number[];
 	private outerRingRadius: number;
 
 	constructor(
@@ -36,16 +36,11 @@ export class RingsRenderer {
 		this.outerRingRadius = Math.min(rangeX, rangeY) / 2;
 		const deltaRadius: number = this.outerRingRadius / ringNames.length;
 
-		this.rings = ringNames.map((name: string, index: number) => {
-			return {
-				name,
-				radius: (index + 1) * deltaRadius
-			};
-		});
+		this.ringsRadiuses = ringNames.map((name: string, index: number) =>  (index + 1) * deltaRadius);
 	}
 
 	private render(): void {
-		const ringsToUpdate: D3Selection = this.container.selectAll('circle.ring').data(this.rings);
+		const ringsToUpdate: D3Selection = this.container.selectAll('circle.ring').data(this.ringsRadiuses);
 		const ringsToEnter: D3Selection = ringsToUpdate.enter().append('circle');
 		const ringsToExit: D3Selection = ringsToUpdate.exit();
 
@@ -55,23 +50,23 @@ export class RingsRenderer {
 	}
 
 	private enter(container: D3Selection): void {
-		this.renderRing(container);
+		this.renderRings(container);
 	}
 
 	private update(container: D3Selection): void {
-		this.renderRing(container);
+		this.renderRings(container);
 	}
 
 	private exit(container: D3Selection): void {
 		container.remove();
 	}
 
-	private renderRing(container: D3Selection): D3Selection {
-		return container
+	private renderRings(container: D3Selection): void {
+		container
 			.attr('class', 'ring')
 			.attr('fill', 'transparent')
 			.attr('transform', `translate(${this.outerRingRadius}, ${this.outerRingRadius})`)
-			.attr('r', (ring: Ring) => ring.radius)
+			.attr('r', (ringRadius: number) => ringRadius)
 			.attr('stroke', this.config$.getValue().ringsConfig.ringsColor)
 			.attr('stroke-width', this.config$.getValue().ringsConfig.strokeWidth);
 	}

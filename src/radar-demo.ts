@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { RadarChartConfig } from './libs/radar-chart/radar-chart.config';
 import { RadarChartModel } from './libs/radar-chart/radar-chart.model';
 import { RadarChartRenderer } from './libs/radar-chart/radar-chart.renderer';
-import { Dimension } from './models/dimension';
+import { Size } from './models/size';
 
 const model: RadarChartModel = new RadarChartModel();
 model.ringNames$.next(['Hold', 'Assess', 'Trial', 'Adopt'].reverse());
@@ -30,7 +30,7 @@ darkConfig.dividersConfig.dividerColor = primaryColor;
 
 const config$: BehaviorSubject<RadarChartConfig> = new BehaviorSubject<RadarChartConfig>(lightConfig);
 
-const size$: BehaviorSubject<Dimension> = new BehaviorSubject({
+const size$: BehaviorSubject<Size> = new BehaviorSubject({
 	width: document.body.clientWidth - 17,
 	height: window.innerHeight
 });

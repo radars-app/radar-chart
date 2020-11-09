@@ -3,7 +3,7 @@ import { RadarChartConfig } from './radar-chart.config';
 import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
-import { Dimension } from '../../models/dimension';
+import { Size } from '../../models/size';
 import { zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
@@ -23,7 +23,7 @@ export class RadarChartRenderer {
 		private svg: D3Selection,
 		private model: RadarChartModel,
 		private config$: BehaviorSubject<RadarChartConfig>,
-		private size$: BehaviorSubject<Dimension>
+		private size$: BehaviorSubject<Size>
 	) {
 		this.initContainers(this.svg);
 		this.initSizing();
@@ -33,7 +33,7 @@ export class RadarChartRenderer {
 		return this.config$.getValue();
 	}
 
-	private get size(): Dimension {
+	private get size(): Size {
 		return this.size$.getValue();
 	}
 
@@ -44,11 +44,11 @@ export class RadarChartRenderer {
 			new BehaviorSubject(this.config)
 		);
 
-		/*this.dividersRenderer = new DividersRenderer(
+		this.dividersRenderer = new DividersRenderer(
 			this.dividersContainer,
 			this.model,
 			new BehaviorSubject(this.config)
-		);*/
+		);
 
 		this.subscribeConfig();
 	}
@@ -56,13 +56,13 @@ export class RadarChartRenderer {
 	private subscribeConfig(): void {
 		this.config$.subscribe((config: RadarChartConfig) => {
 			this.ringsRenderer.config$.next(config);
-		//	this.dividersRenderer.config$.next(config);
+			this.dividersRenderer.config$.next(config);
 			this.render();
 		});
 	}
 
 	private initSizing(): void {
-		this.size$.subscribe((size: Dimension) => {
+		this.size$.subscribe((size: Size) => {
 			this.setRange(size);
 			this.render();
 		});
@@ -74,7 +74,7 @@ export class RadarChartRenderer {
 		}));
 	}
 
-	private setRange(size: Dimension): void {
+	private setRange(size: Size): void {
 		this.model.rangeX$.next(size.width);
 		this.model.rangeY$.next(size.height);
 	}

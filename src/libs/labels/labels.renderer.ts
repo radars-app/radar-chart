@@ -1,5 +1,5 @@
 import { select, selectAll } from 'd3';
-import { Dimension } from '../../models/dimension';
+import { Size } from '../../models/size';
 import { RingNameLabel } from '../../models/ring-name-label';
 import { D3Selection } from '../../models/types/d3-selection';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
@@ -45,7 +45,7 @@ export class LabelsRenderer {
 
 		const config: RadarChartConfig = this.config;
 		textContainerAgain.each(function(labels: RingNameLabel, index: number): void {
-			const rect: Dimension = {
+			const rect: Size = {
 				width: this.getComputedTextLength(),
 				height: 12
 			};
