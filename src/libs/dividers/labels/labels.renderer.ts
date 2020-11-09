@@ -1,5 +1,5 @@
 import { RadarChartConfig } from '../../radar-chart/radar-chart.config';
-import { RingNameLabel } from '../../../models/ring-name-label';
+import { DividersLabel } from '../../../models/dividers-label';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { LabelsConfig } from './labels.config';
 import './labels.scss';
@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 export class LabelsRenderer {
 
-	private labels: RingNameLabel[];
+	private labels: DividersLabel[];
 
 	constructor(public readonly config$: BehaviorSubject<RadarChartConfig>) {}
 
@@ -16,7 +16,7 @@ export class LabelsRenderer {
 	}
 
 	public update(container: D3Selection): void {
-		
+
 	}
 
 	public enter(container: D3Selection): void {

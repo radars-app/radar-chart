@@ -7,16 +7,12 @@ import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { calculateNewRingRange } from '../helpers/calculate-ring-range';
 import { select } from 'd3';
 import { LabelsRenderer } from './labels/labels.renderer';
+import { DividersLabel } from 'src/models/dividers-label';
 import './dividers.scss';
-import { RingNameLabel } from 'src/models/ring-name-label';
 
 export class DividersRenderer {
 
-	private isLabeledDividerFound: boolean;
 	private labelsRenderer: LabelsRenderer;
-	private labels: RingNameLabel[];
-
-	private dividers: Divider[];
 
 	constructor(
 		private container: D3Selection,
@@ -36,9 +32,9 @@ export class DividersRenderer {
 		.subscribe(([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
 			this.labelsRenderer.config$.next(config);
 			const range: number = this.calculateRange(rangeX, rangeY, config);
-			this.calculateDividers(sectorNames);
-			this.calculateLabels(range, ringNames);
-			this.render(range);
+			const dividers: Divider[] = this.calculateDividers(sectorNames);
+			const labels: DividersLabel[] = this.calculateLabels(range, ringNames);
+			this.render(range, dividers, labels);
 		});
 	}
 
@@ -47,49 +43,51 @@ export class DividersRenderer {
 		return Math.min(newRangeX, newRangeY) / 2;
 	}
 
-	private calculateDividers(sectorNames: string[]): void {
+	private calculateDividers(sectorNames: string[]): Divider[] {
 		const rotationDelta: number = 360 / sectorNames.length;
 		const startRotation: number = 270;
 
 		let currentRotation: number = startRotation - rotationDelta;
-		let nextRotation: number = startRotation;
-		this.isLabeledDividerFound = false;
-		this.dividers = sectorNames.map((sectorName: string) => {
-			currentRotation += rotationDelta;
-			nextRotation += rotationDelta;
+		const dividers: Divider[] = sectorNames.map((sectorName: string) => {
 			return {
-				label: sectorName,
-				isLabeled: this.isLabeledDividerFound ? false : this.isLabeledDivider(currentRotation, nextRotation),
-				rotation: currentRotation
+				isLabeled: false,
+				rotation: currentRotation += rotationDelta
 			};
+		});
+		this.markLabeledDivider(dividers);
+		return dividers;
+	}
+
+	private markLabeledDivider(dividers: Divider[]): void {
+		dividers.some((divider: Divider, index: number) => {
+			const currentRotation: number = dividers[index].rotation;
+			const nextRotation: number = dividers[index + 1] ? dividers[index + 1].rotation : currentRotation;
+
+			const isLabeledDivider: boolean = Math.abs(360 - currentRotation) <= Math.abs(360 - nextRotation);
+
+			if (isLabeledDivider) {
+				divider.isLabeled = true;
+				return true;
+			}
 		});
 	}
 
-	private isLabeledDivider(currentRotation: number, nextRotation: number): boolean {
-		const isCurrentDividerLabeled: boolean = Math.abs(360 - currentRotation) <= Math.abs(360 - nextRotation);
-		if (isCurrentDividerLabeled) {
-			this.isLabeledDividerFound = true;
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	private calculateLabels(range: number, ringNames: string[]): void {
+	private calculateLabels(range: number, ringNames: string[]): DividersLabel[] {
 		const deltaX: number = range / ringNames.length;
 		const startX: number = deltaX / 2;
 
 		let currentX: number = startX - deltaX;
-		this.labels = ringNames.map((ringName: string) => {
+		const labels: DividersLabel[] = ringNames.map((ringName: string) => {
 			return {
 				text: ringName,
 				x: currentX += deltaX
 			};
 		});
+		return labels;
 	}
 
-	private render(range: number): void {
-		const dividersToUpdate: D3Selection = this.container.selectAll('g.divider-container').data(this.dividers);
+	private render(range: number, dividers: Divider[], labels: DividersLabel[]): void {
+		const dividersToUpdate: D3Selection = this.container.selectAll('g.divider-container').data(dividers);
 		const dividersToEnter: D3Selection = dividersToUpdate.enter().append('g');
 		const dividersToExit: D3Selection = dividersToUpdate.exit();
 

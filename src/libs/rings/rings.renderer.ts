@@ -10,8 +10,6 @@ export class RingsRenderer {
 
 	private subscriptions: SubscriptionPool;
 
-	private ringsRadiuses: number[];
-
 	constructor(
 		private container: D3Selection,
 		private model: RadarChartModel,
@@ -24,8 +22,8 @@ export class RingsRenderer {
 		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.ringNames$])
 		.subscribe(([rangeX, rangeY, config, ringNames]: [number, number, RadarChartConfig, string[]]) => {
 			const range: number = this.calculateRange(rangeX, rangeY, config);
-			this.calculateRingsRadiuses(range, ringNames);
-			this.render(range);
+			const ringRadiuses: number[] = this.calculateRingsRadiuses(range, ringNames);
+			this.render(range, ringRadiuses);
 		});
 	}
 
@@ -34,14 +32,14 @@ export class RingsRenderer {
 		return Math.min(newRangeX, newRangeY) / 2;
 	}
 
-	private calculateRingsRadiuses(range: number, ringNames: string[]): void {
+	private calculateRingsRadiuses(range: number, ringNames: string[]): number[] {
 		const deltaRadius: number = range / ringNames.length;
 
-		this.ringsRadiuses = ringNames.map((name: string, index: number) =>  (index + 1) * deltaRadius);
+		return ringNames.map((name: string, index: number) =>  (index + 1) * deltaRadius);
 	}
 
-	private render(range: number): void {
-		const ringsToUpdate: D3Selection = this.container.selectAll('circle.ring').data(this.ringsRadiuses);
+	private render(range: number, ringsRadiuses: number[]): void {
+		const ringsToUpdate: D3Selection = this.container.selectAll('circle.ring').data(ringsRadiuses);
 		const ringsToEnter: D3Selection = ringsToUpdate.enter().append('circle');
 		const ringsToExit: D3Selection = ringsToUpdate.exit();
 
