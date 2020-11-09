@@ -4,7 +4,7 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Dimension } from '../../models/dimension';
-import { scaleLinear, ScaleLinear, zoom } from 'd3';
+import { zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { SubscriptionPool } from '../helpers/subscription-pool';
@@ -44,7 +44,7 @@ export class RadarChartRenderer {
 			new BehaviorSubject(this.config)
 		);
 
-	/*	this.dividersRenderer = new DividersRenderer(
+		/*this.dividersRenderer = new DividersRenderer(
 			this.dividersContainer,
 			this.model,
 			new BehaviorSubject(this.config)
@@ -101,7 +101,6 @@ export class RadarChartRenderer {
 			.attr('width', this.size.width)
 			.attr('height', this.size.height);
 
-			//this.config.transformX  + 
 		this.ringsContainer
 			.attr('transform', `translate(${this.config.offsetLeftRight}, ${this.config.offsetTopBottom})`);
 

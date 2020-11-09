@@ -7,7 +7,6 @@ import { combineLatest} from 'rxjs';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { SubscriptionPool } from '../helpers/subscription-pool';
 import { calculateNewRingRange } from '../helpers/calculate-ring-range';
-import { RingsConfig } from './rings.config';
 
 export class RingsRenderer {
 
@@ -40,41 +39,40 @@ export class RingsRenderer {
 		this.rings = ringNames.map((name: string, index: number) => {
 			return {
 				name,
-				className: `${convertToClassName(name)}-${index}`,
 				radius: (index + 1) * deltaRadius
 			};
 		});
 	}
 
 	private render(): void {
-		const container: D3Selection = this.container.selectAll('circle.ring').data(this.rings);
+		const ringsToUpdate: D3Selection = this.container.selectAll('circle.ring').data(this.rings);
+		const ringsToEnter: D3Selection = ringsToUpdate.enter().append('circle');
+		const ringsToExit: D3Selection = ringsToUpdate.exit();
 
-		this.enter(container);
-		this.update(container);
-		this.exit(container);
+		this.update(ringsToUpdate);
+		this.enter(ringsToEnter);
+		this.exit(ringsToExit);
 	}
 
 	private enter(container: D3Selection): void {
-		const enteredRings: D3Selection = container
-			.enter()
-			.append('circle');
-
-		this.update(enteredRings);
+		this.renderRing(container);
 	}
 
-	private update(container: D3Selection): D3Selection {
-		const config: RingsConfig = this.config$.getValue().ringsConfig;
-
-		return container
-			.attr('class', (ring: Ring) => `ring ${ring.className}`)
-			.attr('r', (ring: Ring) => ring.radius)
-			.attr('fill', 'transparent')
-			.attr('stroke', config.ringsColor)
-			.attr('stroke-width', config.strokeWidth)
-			.attr('transform', `translate(${this.outerRingRadius}, ${this.outerRingRadius})`);
+	private update(container: D3Selection): void {
+		this.renderRing(container);
 	}
 
 	private exit(container: D3Selection): void {
-		container.exit().remove();
+		container.remove();
+	}
+
+	private renderRing(container: D3Selection): D3Selection {
+		return container
+			.attr('class', 'ring')
+			.attr('fill', 'transparent')
+			.attr('transform', `translate(${this.outerRingRadius}, ${this.outerRingRadius})`)
+			.attr('r', (ring: Ring) => ring.radius)
+			.attr('stroke', this.config$.getValue().ringsConfig.ringsColor)
+			.attr('stroke-width', this.config$.getValue().ringsConfig.strokeWidth);
 	}
 }
