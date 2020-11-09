@@ -1,5 +1,3 @@
-import { LabelsConfig } from '../labels/labels.config';
-
 export class DividersConfig {
 	public dividerColor: string;
 	public strokeWidth: number;

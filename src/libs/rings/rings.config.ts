@@ -1,4 +1,4 @@
-import { LabelsConfig } from '../labels/labels.config';
+import { LabelsConfig } from '../dividers/labels/labels.config';
 
 export class RingsConfig {
 	public ringsColor: string;

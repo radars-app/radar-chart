@@ -1,26 +1,45 @@
-import { select, selectAll } from 'd3';
-import { Size } from '../../models/size';
-import { RingNameLabel } from '../../models/ring-name-label';
-import { D3Selection } from '../../models/types/d3-selection';
-import { RadarChartConfig } from '../radar-chart/radar-chart.config';
+import { RadarChartConfig } from '../../radar-chart/radar-chart.config';
+import { RingNameLabel } from '../../../models/ring-name-label';
+import { D3Selection } from '../../../models/types/d3-selection';
 import { LabelsConfig } from './labels.config';
 import './labels.scss';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 
 export class LabelsRenderer {
 
 	private labels: RingNameLabel[];
 
-	constructor(public config: RadarChartConfig) {}
+	constructor(public readonly config$: BehaviorSubject<RadarChartConfig>) {}
 
 	private get labelsConfig(): LabelsConfig {
-		return this.config.ringsConfig.labelsConfig;
+		return this.config$.getValue().ringsConfig.labelsConfig;
 	}
 
-	public render(container: D3Selection, outerRingRadius: number, ringNames: string[]): void {
-		this.calculateLabels(outerRingRadius, ringNames);
-		selectAll('g.rect-container').remove();
-		selectAll('g.label-container').remove();
+	public update(container: D3Selection): void {
+		
+	}
 
+	public enter(container: D3Selection): void {
+
+	}
+
+	public exit(container: D3Selection): void {
+
+	}
+
+	private renderContainer(container: D3Selection): void {
+
+	}
+
+	private renderBackground(container: D3Selection): void {
+
+	}
+
+	private renderLabel(container: D3Selection): void {
+
+	}
+
+	/*private render(container: D3Selection, outerRingRadius: number, ringNames: string[]): void {
 		const rectContainer: D3Selection = container
 			.append('g')
 			.attr('class', 'rect-container');
@@ -94,18 +113,5 @@ export class LabelsRenderer {
 
 	private exit(container: D3Selection): void {
 		container.exit().remove();
-	}
-
-	private calculateLabels(outerRingRadius: number, ringNames: string[]): void {
-		const deltaX: number = outerRingRadius / ringNames.length;
-		const startX: number = deltaX / 2;
-
-		let currentX: number = startX - deltaX;
-		this.labels = ringNames.map((ringName: string) => {
-			return {
-				text: ringName,
-				x: currentX += deltaX
-			};
-		});
-	}
+	}*/
 }
