@@ -5,9 +5,8 @@ import { Divider } from '../../models/divider';
 import { D3Selection } from '../../models/types/d3-selection';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { calculateNewRingRange } from '../helpers/calculate-ring-range';
-import { lab, select } from 'd3';
+import { select } from 'd3';
 import { LabelsRenderer } from './labels/labels.renderer';
-import { DividersLabel } from 'src/models/dividers-label';
 import './dividers.scss';
 
 export class DividersRenderer {
@@ -33,7 +32,6 @@ export class DividersRenderer {
 			this.labelsRenderer.config$.next(config);
 			const range: number = this.calculateRange(rangeX, rangeY, config);
 			const dividers: Divider[] = this.calculateDividers(sectorNames);
-		//	const labels: DividersLabel[] = this.calculateLabels(range, ringNames);
 			this.render(range, dividers, ringNames);
 		});
 	}

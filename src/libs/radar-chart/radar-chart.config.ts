@@ -7,12 +7,10 @@ export class RadarChartConfig {
 	public transformX: number;
 	public offsetLeftRight: number;
 	public offsetTopBottom: number;
-	public readonly containerDomainX: number;
 	public readonly ringsConfig: RingsConfig;
 	public readonly dividersConfig: DividersConfig;
 
 	constructor() {
-	//	this.transformX = 542; //	rename var
 		this.offsetLeftRight = 1;
 		this.offsetTopBottom = 18;
 		this.backgroundColor = '#F0F4F8';
