@@ -3,7 +3,7 @@ import { DividersLabel } from '../../../models/dividers-label';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { LabelsConfig } from './labels.config';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { scaleLinear, ScaleLinear, selectAll } from 'd3';
+import { selectAll } from 'd3';
 import './labels.scss';
 
 export class LabelsRenderer {
@@ -28,7 +28,7 @@ export class LabelsRenderer {
 		this.renderText(textToEnter);
 		textToExit.remove();
 
-		this.calculateBackgroundWidth(selectAll('text.text'));
+		this.initBackgroundWidth(selectAll('text.text'));
 		const backgroundToUpdate: D3Selection = backgroundContainer.selectAll('rect.background').data(labels);
 		const backgroundToEnter: D3Selection = backgroundToUpdate.enter().append('rect');
 		const backgroundToExit: D3Selection = backgroundToUpdate.exit();
@@ -58,7 +58,7 @@ export class LabelsRenderer {
 			.attr('dominant-baseline', 'middle');
 	}
 
-	private calculateBackgroundWidth(text: D3Selection): void {
+	private initBackgroundWidth(text: D3Selection): void {
 		text.each(function(label: DividersLabel): void {
 			label.backgroundWidth = this.getComputedTextLength();
 		});

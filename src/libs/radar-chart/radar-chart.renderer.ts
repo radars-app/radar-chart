@@ -102,9 +102,9 @@ export class RadarChartRenderer {
 			.attr('height', this.size.height);
 
 		this.ringsContainer
-			.attr('transform', `translate(${this.config.offsetLeftRight}, ${this.config.offsetTopBottom})`);
+			.attr('transform', `translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`);
 
 		this.dividersContainer
-			.attr('transform', `translate(${this.config.offsetLeftRight}, ${this.config.offsetTopBottom})`);
+			.attr('transform', `translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`);
 	}
 }

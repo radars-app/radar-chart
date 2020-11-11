@@ -4,15 +4,16 @@ import { DividersConfig } from '../dividers/dividers.config';
 
 export class RadarChartConfig {
 	public backgroundColor: string;
-	public transformX: number;
-	public offsetLeftRight: number;
-	public offsetTopBottom: number;
+	public offsetLeft: number;
+	public marginLeftRight: number;
+	public marginTopBottom: number;
 	public readonly ringsConfig: RingsConfig;
 	public readonly dividersConfig: DividersConfig;
 
 	constructor() {
-		this.offsetLeftRight = 1;
-		this.offsetTopBottom = 18;
+		this.offsetLeft = 540;
+		this.marginLeftRight = 1;
+		this.marginTopBottom = 18;
 		this.backgroundColor = '#F0F4F8';
 		this.ringsConfig = new RingsConfig();
 		this.dividersConfig = new DividersConfig();
