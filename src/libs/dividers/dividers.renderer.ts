@@ -70,7 +70,7 @@ export class DividersRenderer {
 	}
 
 	private render(range: number, dividerModels: Divider[], ringNames: string[]): void {
-		const dividersToUpdate: D3Selection = this.container.selectAll('g.divider-container').data(dividerModels);
+		const dividersToUpdate: D3Selection = this.container.selectAll('g.divider').data(dividerModels);
 		const dividersToEnter: D3Selection = dividersToUpdate.enter().append('g');
 		const dividersToExit: D3Selection = dividersToUpdate.exit();
 
@@ -88,8 +88,8 @@ export class DividersRenderer {
 			self.renderDividers(dividerLine, range);
 
 			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
-			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'background-container');
-			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'text-container');
+			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
+			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
 			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
 		});
 	}
@@ -103,8 +103,8 @@ export class DividersRenderer {
 			self.renderDividers(divider, range);
 
 			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
-			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'background-container');
-			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'text-container');
+			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
+			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
 			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
 		});
 	}
@@ -115,7 +115,7 @@ export class DividersRenderer {
 
 	private renderDividersContainer(container: D3Selection, range: number): void {
 		container
-			.attr('class', 'divider-container')
+			.attr('class', 'divider')
 			.attr('transform', (divider: Divider) =>
 				`translate(${range}, ${range}) rotate(${divider.rotation}, 0, 0)`
 			);
@@ -123,7 +123,7 @@ export class DividersRenderer {
 
 	private renderDividers(container: D3Selection, range: number): void {
 		container
-			.attr('class', 'divider')
+			.attr('class', 'divider__line')
 			.attr('x1', 0)
 			.attr('y1', 0)
 			.attr('x2', range)

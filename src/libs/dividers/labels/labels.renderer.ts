@@ -20,7 +20,7 @@ export class LabelsRenderer {
 
 	public render(backgroundContainer: D3Selection, textContainer: D3Selection, range: number, ringNames: string[]): void {
 		const labels: DividersLabel[] = this.calculateLabels(range, ringNames);
-		const textToUpdate: D3Selection = textContainer.selectAll('text.text').data(labels);
+		const textToUpdate: D3Selection = textContainer.selectAll('text.label').data(labels);
 		const textToEnter: D3Selection = textToUpdate.enter().append('text');
 		const textToExit: D3Selection = textToUpdate.exit();
 
@@ -28,8 +28,8 @@ export class LabelsRenderer {
 		this.renderText(textToEnter);
 		textToExit.remove();
 
-		this.initBackgroundWidth(selectAll('text.text'));
-		const backgroundToUpdate: D3Selection = backgroundContainer.selectAll('rect.background').data(labels);
+		this.initBackgroundWidth(selectAll('text.label'));
+		const backgroundToUpdate: D3Selection = backgroundContainer.selectAll('rect.label-background').data(labels);
 		const backgroundToEnter: D3Selection = backgroundToUpdate.enter().append('rect');
 		const backgroundToExit: D3Selection = backgroundToUpdate.exit();
 
@@ -40,7 +40,7 @@ export class LabelsRenderer {
 
 	private renderBackground(container: D3Selection): void {
 		container
-			.classed('background', true)
+			.classed('label-background', true)
 			.attr('width', (label: DividersLabel) => label.backgroundWidth + 7)
 			.attr('height', this.labelsConfig.lineHeight)
 			.attr('fill', this.config.backgroundColor)
@@ -49,7 +49,7 @@ export class LabelsRenderer {
 
 	private renderText(container: D3Selection): void {
 		container
-			.classed('text', true)
+			.classed('label', true)
 			.text((label: DividersLabel) => label.text)
 			.attr('x', (label: DividersLabel) => label.x)
 			.attr('font-family', this.labelsConfig.fontFamily)
