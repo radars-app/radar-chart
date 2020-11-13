@@ -33,5 +33,5 @@ jobs:
     - name: Deploy
       run: |
         npm ci
-        npm run build:dev
+        npm run build
         npm publish

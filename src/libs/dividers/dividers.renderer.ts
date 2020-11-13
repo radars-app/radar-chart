@@ -83,7 +83,7 @@ export class DividersRenderer {
 		const self: DividersRenderer = this;
 		container.each(function(dividerModel: Divider): void {
 			const dividerContainer: D3Selection = select(this);
-			const dividerLine: D3Selection = dividerContainer.select('line.divider');
+			const dividerLine: D3Selection = dividerContainer.select('line.divider__line');
 			self.renderDividersContainer(dividerContainer, range);
 			self.renderDividers(dividerLine, range);
 

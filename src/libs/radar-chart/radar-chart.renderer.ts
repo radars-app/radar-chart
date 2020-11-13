@@ -4,7 +4,7 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Size } from '../../models/size';
-import { zoom } from 'd3';
+import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { SubscriptionPool } from '../helpers/subscription-pool';
@@ -13,6 +13,8 @@ export class RadarChartRenderer {
 
 	private subscriptions: SubscriptionPool;
 
+	private container: D3Selection;
+
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
 
@@ -20,12 +22,12 @@ export class RadarChartRenderer {
 	private dividersContainer: D3Selection;
 
 	constructor(
-		private svg: D3Selection,
+		private svgElement: SVGElement,
 		private model: RadarChartModel,
 		private config$: BehaviorSubject<RadarChartConfig>,
 		private size$: BehaviorSubject<Size>
 	) {
-		this.initContainers(this.svg);
+		this.initContainers();
 		this.initSizing();
 	}
 
@@ -66,9 +68,9 @@ export class RadarChartRenderer {
 		});
 	}
 
-	private initZoom(container: D3Selection): void {
-		this.svg.call(zoom().on('zoom', function (event: D3ZoomEvent): void {
-			container
+	private initZoom(zoomContainer: D3Selection): void {
+		this.container.call(zoom().on('zoom', function (event: D3ZoomEvent): void {
+			zoomContainer
 				.attr('transform', event.transform.toString());
 		}));
 	}
@@ -78,24 +80,26 @@ export class RadarChartRenderer {
 		this.model.rangeY$.next(size.height);
 	}
 
-	private initContainers(container: D3Selection): void {
-		const zoomContainer: D3Selection = container
+	private initContainers(): void {
+		this.container = select(this.svgElement);
+
+		const zoomContainer: D3Selection = this.container
 			.append('g')
 			.attr('class', 'radar-chart__zoom-container');
 
 		this.initZoom(zoomContainer);
 
-		this.ringsContainer = this.svg.select('g.radar-chart__zoom-container')
+		this.ringsContainer = this.container.select('g.radar-chart__zoom-container')
 			.append('g')
 			.attr('class', 'radar-chart__rings');
 
-		this.dividersContainer = this.svg.select('g.radar-chart__zoom-container')
+		this.dividersContainer = this.container.select('g.radar-chart__zoom-container')
 			.append('g')
 			.attr('class', 'radar-chart__dividers');
 	}
 
 	private render(): void {
-		this.svg
+		this.container
 			.style('background', this.config.backgroundColor)
 			.attr('width', this.size.width)
 			.attr('height', this.size.height);
