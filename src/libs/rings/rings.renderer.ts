@@ -4,7 +4,7 @@ import { RadarChartModel } from '../radar-chart/radar-chart.model';
 import { combineLatest} from 'rxjs';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { SubscriptionPool } from '../helpers/subscription-pool';
-import { calculateNewRingRange } from '../helpers/calculate-ring-range';
+import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 
 export class RingsRenderer {
 
@@ -13,28 +13,27 @@ export class RingsRenderer {
 	constructor(
 		private container: D3Selection,
 		private model: RadarChartModel,
-		public readonly config$: BehaviorSubject<RadarChartConfig>
+		private config$: BehaviorSubject<RadarChartConfig>
 	) {
 		this.initBehavior();
 	}
 
 	private initBehavior(): void {
-		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.ringNames$])
+		combineLatest([
+			this.model.rangeX$,
+			this.model.rangeY$,
+			this.config$,
+			this.model.ringNames$
+		])
 		.subscribe(([rangeX, rangeY, config, ringNames]: [number, number, RadarChartConfig, string[]]) => {
-			const range: number = this.calculateRange(rangeX, rangeY, config);
-			const ringRadiuses: number[] = this.calculateRingsRadiuses(range, ringNames);
-			this.render(range, ringRadiuses);
+			const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
+			const ringRadiuses: number[] = this.calculateRingsRadiuses(outerRingRadius, ringNames);
+			this.render(outerRingRadius, ringRadiuses);
 		});
-	}
-
-	private calculateRange(rangeX: number, rangeY: number, config: RadarChartConfig): number {
-		const [newRangeX, newRangeY]: [number, number] = calculateNewRingRange(rangeX, rangeY, config);
-		return Math.min(newRangeX, newRangeY) / 2;
 	}
 
 	private calculateRingsRadiuses(range: number, ringNames: string[]): number[] {
 		const deltaRadius: number = range / ringNames.length;
-
 		return ringNames.map((name: string, index: number) =>  (index + 1) * deltaRadius);
 	}
 

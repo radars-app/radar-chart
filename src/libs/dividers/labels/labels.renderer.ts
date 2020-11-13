@@ -8,7 +8,7 @@ import './labels.scss';
 
 export class LabelsRenderer {
 
-	constructor(public readonly config$: BehaviorSubject<RadarChartConfig>) {}
+	constructor(private config$: BehaviorSubject<RadarChartConfig>) {}
 
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();

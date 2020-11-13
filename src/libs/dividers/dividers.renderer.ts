@@ -4,9 +4,9 @@ import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { Divider } from '../../models/divider';
 import { D3Selection } from '../../models/types/d3-selection';
 import { combineLatest } from 'rxjs/internal/observable/combineLatest';
-import { calculateNewRingRange } from '../helpers/calculate-ring-range';
-import { select } from 'd3';
 import { LabelsRenderer } from './labels/labels.renderer';
+import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
+import { select } from 'd3';
 
 export class DividersRenderer {
 
@@ -15,7 +15,7 @@ export class DividersRenderer {
 	constructor(
 		private container: D3Selection,
 		private model: RadarChartModel,
-		public readonly config$: BehaviorSubject<RadarChartConfig>
+		private config$: BehaviorSubject<RadarChartConfig>
 	) {
 		this.labelsRenderer = new LabelsRenderer(this.config$);
 		this.initBehavior();
@@ -26,17 +26,18 @@ export class DividersRenderer {
 	}
 
 	private initBehavior(): void {
-		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectorNames$, this.model.ringNames$])
+		combineLatest([
+			this.model.rangeX$,
+			this.model.rangeY$,
+			this.config$,
+			this.model.sectorNames$,
+			this.model.ringNames$
+		])
 		.subscribe(([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
-			const range: number = this.calculateRange(rangeX, rangeY, config);
+			const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
 			const dividers: Divider[] = this.calculateDividers(sectorNames);
-			this.render(range, dividers, ringNames);
+			this.render(outerRingRadius, dividers, ringNames);
 		});
-	}
-
-	private calculateRange(rangeX: number, rangeY: number, config: RadarChartConfig): number {
-		const [newRangeX, newRangeY]: [number, number] = calculateNewRingRange(rangeX, rangeY, config);
-		return Math.min(newRangeX, newRangeY) / 2;
 	}
 
 	private calculateDividers(sectorNames: string[]): Divider[] {
