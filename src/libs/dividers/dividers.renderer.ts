@@ -41,18 +41,21 @@ export class DividersRenderer {
 	}
 
 	private createDividerModels(sectorNames: string[]): Divider[] {
-		const deltaDegree: number = 360 / sectorNames.length;
 		const startDegree: number = 270;
+		const dividers: Divider[] = this.initDividers(startDegree, sectorNames);
+		this.setLabeledDivider(dividers);
+		return dividers;
+	}
 
+	private initDividers(startDegree: number, sectorNames: string[]): Divider[] {
+		const deltaDegree: number = 360 / sectorNames.length;
 		let currentDegree: number = startDegree - deltaDegree;
-		const dividers: Divider[] = sectorNames.map((sectorName: string) => {
+		return sectorNames.map(() => {
 			return {
 				isLabeled: false,
 				rotation: currentDegree += deltaDegree
 			};
 		});
-		this.setLabeledDivider(dividers);
-		return dividers;
 	}
 
 	private setLabeledDivider(dividers: Divider[]): void {

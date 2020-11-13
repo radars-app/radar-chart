@@ -15,7 +15,7 @@ export class LabelsRenderer {
 	}
 
 	private get labelsConfig(): LabelsConfig {
-		return this.config$.getValue().ringsConfig.labelsConfig;
+		return this.config.ringsConfig.labelsConfig;
 	}
 
 	public render(backgroundContainer: D3Selection, textContainer: D3Selection, range: number, ringNames: string[]): void {
