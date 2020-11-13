@@ -1,94 +1,71 @@
 import { D3Selection } from '../../models/types/d3-selection';
-import { RingsConfig } from './rings.config';
-import { RingsModel } from './rings.model';
-import { convertToClassName } from '../helpers/convert-to-class-name';
-import { Ring } from '../../models/ring';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Dimension } from '../../models/dimension';
+import { RadarChartModel } from '../radar-chart/radar-chart.model';
+import { combineLatest} from 'rxjs';
+import { RadarChartConfig } from '../radar-chart/radar-chart.config';
+import { SubscriptionPool } from '../helpers/subscription-pool';
+import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 
 export class RingsRenderer {
 
-	private outerRingRadius: number;
-	private rings: Ring[];
+	private subscriptions: SubscriptionPool;
 
 	constructor(
 		private container: D3Selection,
-		private model: RingsModel,
-		public readonly config$: BehaviorSubject<RingsConfig>,
-		private range$: BehaviorSubject<Dimension>) {
-			this.subscribeConfig();
-			this.initBehavior();
-			this.initSizing();
-		}
-
-	private get config(): RingsConfig {
-		return this.config$.getValue();
-	}
-
-	private get range(): Dimension {
-		return this.range$.getValue();
-	}
-
-	private get ringNames(): string[] {
-		return this.model.ringNames.getValue();
-	}
-
-	private subscribeConfig(): void {
-		this.config$.subscribe((config: RingsConfig) => {
-			this.render();
-		});
+		private model: RadarChartModel,
+		private config$: BehaviorSubject<RadarChartConfig>
+	) {
+		this.initBehavior();
 	}
 
 	private initBehavior(): void {
-		this.model.ringNames.subscribe((ringNames: string[]) => {
-			this.render();
+		combineLatest([
+			this.model.rangeX$,
+			this.model.rangeY$,
+			this.config$,
+			this.model.ringNames$
+		])
+		.subscribe(([rangeX, rangeY, config, ringNames]: [number, number, RadarChartConfig, string[]]) => {
+			const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
+			const ringRadiuses: number[] = this.calculateRingsRadiuses(outerRingRadius, ringNames);
+			this.render(outerRingRadius, ringRadiuses);
 		});
 	}
 
-	private initSizing(): void {
-		this.range$.subscribe(() => {
-			this.render();
-		});
+	private calculateRingsRadiuses(range: number, ringNames: string[]): number[] {
+		const deltaRadius: number = range / ringNames.length;
+		return ringNames.map((name: string, index: number) =>  (index + 1) * deltaRadius);
 	}
 
-	private calculateRingsRadiuses(): void {
-		this.outerRingRadius = Math.min(this.range.width, this.range.height) / 2;
-		const deltaRadius: number = this.outerRingRadius / this.ringNames.length;
+	private render(range: number, ringsRadiuses: number[]): void {
+		const ringsToUpdate: D3Selection = this.container.selectAll('circle.ring').data(ringsRadiuses);
+		const ringsToEnter: D3Selection = ringsToUpdate.enter().append('circle');
+		const ringsToExit: D3Selection = ringsToUpdate.exit();
 
-		this.rings = this.ringNames.map((name: string, index: number) => {
-			return {
-				name,
-				className: `${convertToClassName(name)}-${index}`,
-				radius: (index + 1) * deltaRadius
-			};
-		});
+		this.update(ringsToUpdate, range);
+		this.enter(ringsToEnter, range);
+		this.exit(ringsToExit);
 	}
 
-	private update(container: D3Selection): D3Selection {
-		return container
-			.attr('class', (ring: Ring) => `ring ${ring.className}`)
-			.attr('r', (ring: Ring) => ring.radius)
-			.attr('fill', 'transparent')
-			.attr('stroke', this.config.ringsColor)
-			.attr('stroke-width', this.config.strokeWidth)
-			.attr('transform', `translate(${this.outerRingRadius}, ${this.outerRingRadius})`);
+	private enter(container: D3Selection, range: number): void {
+		this.renderRings(container, range);
 	}
 
-	private enter(container: D3Selection): void {
-		const ringsToEnter: D3Selection = container.enter().append('circle');
-		this.update(ringsToEnter);
+	private update(container: D3Selection, range: number): void {
+		this.renderRings(container, range);
 	}
 
 	private exit(container: D3Selection): void {
-		container.exit().remove();
+		container.remove();
 	}
 
-	private render(): void {
-		this.calculateRingsRadiuses();
-		const container: D3Selection = this.container.selectAll('circle.ring').data(this.rings);
-
-		this.enter(container);
-		this.update(container);
-		this.exit(container);
+	private renderRings(container: D3Selection, range: number): void {
+		container
+			.attr('class', 'ring')
+			.attr('fill', 'transparent')
+			.attr('transform', `translate(${range}, ${range})`)
+			.attr('r', (ringRadius: number) => ringRadius)
+			.attr('stroke', this.config$.getValue().ringsConfig.ringsColor)
+			.attr('stroke-width', this.config$.getValue().ringsConfig.strokeWidth);
 	}
 }

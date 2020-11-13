@@ -1,6 +1,6 @@
 {
 	"name": "radar-chart-project",
-	"version": "0.0.19",
+	"version": "0.0.20",
 	"description": "",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -22,7 +22,6 @@
 	"license": "N/A",
 	"dependencies": {
 		"d3": "^6.2.0",
-		"d3-zoom": "^2.0.0",
 		"rxjs": "^6.6.3"
 	},
 	"devDependencies": {

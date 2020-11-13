@@ -1,144 +1,146 @@
-import { Dimension } from '../../models/dimension';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import './dividers.scss';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
-import { LabelsRenderer } from '../labels/labels.renderer';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { Divider } from '../../models/divider';
 import { D3Selection } from '../../models/types/d3-selection';
+import { combineLatest } from 'rxjs/internal/observable/combineLatest';
+import { LabelsRenderer } from './labels/labels.renderer';
+import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
+import { select } from 'd3';
 
 export class DividersRenderer {
 
-	private isLabeledDividerFound: boolean;
 	private labelsRenderer: LabelsRenderer;
-
-	private outerRingRadius: number;
-	private dividers: Divider[];
 
 	constructor(
 		private container: D3Selection,
 		private model: RadarChartModel,
-		public readonly config$: BehaviorSubject<RadarChartConfig>,
-		private range$: BehaviorSubject<Dimension>
+		private config$: BehaviorSubject<RadarChartConfig>
 	) {
-		this.labelsRenderer = new LabelsRenderer(
-			this.config
-		);
-		this.subscribeConfig();
+		this.labelsRenderer = new LabelsRenderer(this.config$);
 		this.initBehavior();
-		this.initSizing();
 	}
 
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();
 	}
 
-	private get sectorNames(): string[] {
-		return this.model.dividers.sectorNames.getValue();
-	}
-
-	private get range(): Dimension {
-		return this.range$.getValue();
-	}
-
 	private initBehavior(): void {
-		this.model.dividers.sectorNames.subscribe((sectorNames: string[]) => {
-			this.render();
-		});
-
-		this.model.rings.ringNames.subscribe((ringNames: string[]) => {
-			this.renderLabels(ringNames);
-		});
-	}
-
-	private subscribeConfig(): void {
-		this.config$.subscribe((config: RadarChartConfig) => {
-			this.labelsRenderer.config = config;
-			this.render();
+		combineLatest([
+			this.model.rangeX$,
+			this.model.rangeY$,
+			this.config$,
+			this.model.sectorNames$,
+			this.model.ringNames$
+		])
+		.subscribe(([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
+			const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
+			const dividers: Divider[] = this.createDividerModels(sectorNames);
+			this.render(outerRingRadius, dividers, ringNames);
 		});
 	}
 
-	private initSizing(): void {
-		this.range$.subscribe(() => {
-			this.render();
-		});
+	private createDividerModels(sectorNames: string[]): Divider[] {
+		const startDegree: number = 270;
+		const dividers: Divider[] = this.initDividers(startDegree, sectorNames);
+		this.setLabeledDivider(dividers);
+		return dividers;
 	}
 
-	private calculateDividers(): void {
-		this.outerRingRadius = Math.min(this.range.width, this.range.height) / 2;
-		const rotationDelta: number = 360 / this.sectorNames.length;
-		const startRotation: number = 270;
-
-		let currentRotation: number = startRotation - rotationDelta;
-		let nextRotation: number = startRotation;
-		this.isLabeledDividerFound = false;
-		this.dividers = this.sectorNames.map((sectorName: string) => {
-			currentRotation += rotationDelta;
-			nextRotation += rotationDelta;
+	private initDividers(startDegree: number, sectorNames: string[]): Divider[] {
+		const deltaDegree: number = 360 / sectorNames.length;
+		let currentDegree: number = startDegree - deltaDegree;
+		return sectorNames.map(() => {
 			return {
-				label: sectorName,
-				isLabeled: this.isLabeledDividerFound ? false : this.isLabeledDivider(currentRotation, nextRotation, rotationDelta),
-				rotation: currentRotation
+				isLabeled: false,
+				rotation: currentDegree += deltaDegree
 			};
 		});
 	}
 
-	private isLabeledDivider(currentRotation: number, nextRotation: number, rotationDelta: number): boolean {
-		const isCurrentDividerLabeled: boolean = Math.abs(360 - currentRotation) <= Math.abs(360 - nextRotation);
-		if (isCurrentDividerLabeled) {
-			this.isLabeledDividerFound = true;
-			return true;
-		} else {
-			return false;
-		}
+	private setLabeledDivider(dividers: Divider[]): void {
+		dividers.some((divider: Divider, index: number) => {
+			const currentRotation: number = dividers[index].rotation;
+			const nextRotation: number = dividers[index + 1] ? dividers[index + 1].rotation : currentRotation;
+
+			const isLabeledDivider: boolean = Math.abs(360 - currentRotation) <= Math.abs(360 - nextRotation);
+
+			if (isLabeledDivider) {
+				divider.isLabeled = true;
+				return true;
+			}
+		});
 	}
 
-	private getContainerTransform(divider: Divider): string {
-		return 	`translate(${this.outerRingRadius}, ${this.outerRingRadius}) rotate(${divider.rotation}, 0, 0)`;
+	private render(range: number, dividerModels: Divider[], ringNames: string[]): void {
+		const dividersToUpdate: D3Selection = this.container.selectAll('g.divider').data(dividerModels);
+		const dividersToEnter: D3Selection = dividersToUpdate.enter().append('g');
+		const dividersToExit: D3Selection = dividersToUpdate.exit();
+
+		this.update(dividersToUpdate, range, ringNames);
+		this.enter(dividersToEnter, range, ringNames);
+		this.exit(dividersToExit);
 	}
 
-	private update(container: D3Selection): void {
+	private update(container: D3Selection, range: number, ringNames: string[]): void {
+		const self: DividersRenderer = this;
+		container.each(function(dividerModel: Divider): void {
+			const dividerContainer: D3Selection = select(this);
+			const dividerLine: D3Selection = dividerContainer.select('line.divider__line');
+			self.renderDividersContainer(dividerContainer, range);
+			self.renderDividers(dividerLine, range);
+
+			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
+			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
+			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
+			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+		});
+	}
+
+	private enter(container: D3Selection, range: number, ringNames: string[]): void {
+		const self: DividersRenderer = this;
+		container.each(function(dividerModel: Divider): void {
+			const dividerContainer: D3Selection = select(this);
+			const divider: D3Selection = dividerContainer.append('line');
+			self.renderDividersContainer(dividerContainer, range);
+			self.renderDividers(divider, range);
+
+			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
+			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
+			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
+			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+		});
+	}
+
+	private exit(container: D3Selection): void {
+		container.remove();
+	}
+
+	private renderDividersContainer(container: D3Selection, range: number): void {
 		container
 			.attr('class', 'divider')
-			.attr('x1', 0).attr('y1', 0)
-			.attr('x2', this.outerRingRadius).attr('y2', 0)
+			.attr('transform', (divider: Divider) =>
+				`translate(${range}, ${range}) rotate(${divider.rotation}, 0, 0)`
+			);
+	}
+
+	private renderDividers(container: D3Selection, range: number): void {
+		container
+			.attr('class', 'divider__line')
+			.attr('x1', 0)
+			.attr('y1', 0)
+			.attr('x2', range)
+			.attr('y2', 0)
 			.attr('stroke', this.config.dividersConfig.dividerColor)
 			.attr('stroke-width', this.config.dividersConfig.strokeWidth);
 	}
 
-	private enter(container: D3Selection): void {
-		const dividersToEnter: D3Selection = container
-			.enter()
-				.append('g')
-					.attr('class', 'divider-container')
-					.classed('labeled', (divider: Divider) => divider.isLabeled)
-					.attr('transform', (divider: Divider) => this.getContainerTransform(divider))
-						.append('line');
-
-		this.update(dividersToEnter);
-	}
-
-	private exit(container: D3Selection): void {
-		container.exit().remove();
-	}
-
-	private render(): void {
-		this.calculateDividers();
-		const dividerContainer: D3Selection = this.container.selectAll('g.divider-container').data(this.dividers);
-		const container: D3Selection = this.container.selectAll('g.divider-container > line.divider').data(this.dividers);
-
-		this.enter(container);
-		this.update(container);
-		dividerContainer
-			.classed('labeled', (divider: Divider) => divider.isLabeled)
-			.attr('transform', (divider: Divider) => this.getContainerTransform(divider));
-		this.exit(dividerContainer);
-
-		this.renderLabels(this.model.rings.ringNames.getValue());
-	}
-
-	private renderLabels(ringNames: string[]): void {
-		const labeledContainer: D3Selection = this.container.select('g.divider-container.labeled');
-		this.labelsRenderer.render(labeledContainer, this.outerRingRadius, ringNames);
+	private appendContainerIfNotExist(container: D3Selection, className: string): D3Selection {
+		const existingContainer: D3Selection = container.select(`g.${className}`);
+		if (Boolean(existingContainer.nodes().length)) {
+			return existingContainer;
+		} else {
+			return container.append('g').classed(className, true);
+		}
 	}
 }

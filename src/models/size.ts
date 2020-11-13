@@ -1,4 +1,4 @@
-export interface Dimension {
+export interface Size {
 	width: number;
 	height: number;
 }
