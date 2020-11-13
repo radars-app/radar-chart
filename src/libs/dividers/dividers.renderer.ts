@@ -35,27 +35,27 @@ export class DividersRenderer {
 		])
 		.subscribe(([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
 			const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
-			const dividers: Divider[] = this.calculateDividers(sectorNames);
+			const dividers: Divider[] = this.createDividerModels(sectorNames);
 			this.render(outerRingRadius, dividers, ringNames);
 		});
 	}
 
-	private calculateDividers(sectorNames: string[]): Divider[] {
-		const rotationDelta: number = 360 / sectorNames.length;
-		const startRotation: number = 270;
+	private createDividerModels(sectorNames: string[]): Divider[] {
+		const deltaDegree: number = 360 / sectorNames.length;
+		const startDegree: number = 270;
 
-		let currentRotation: number = startRotation - rotationDelta;
+		let currentDegree: number = startDegree - deltaDegree;
 		const dividers: Divider[] = sectorNames.map((sectorName: string) => {
 			return {
 				isLabeled: false,
-				rotation: currentRotation += rotationDelta
+				rotation: currentDegree += deltaDegree
 			};
 		});
-		this.markLabeledDivider(dividers);
+		this.setLabeledDivider(dividers);
 		return dividers;
 	}
 
-	private markLabeledDivider(dividers: Divider[]): void {
+	private setLabeledDivider(dividers: Divider[]): void {
 		dividers.some((divider: Divider, index: number) => {
 			const currentRotation: number = dividers[index].rotation;
 			const nextRotation: number = dividers[index + 1] ? dividers[index + 1].rotation : currentRotation;
@@ -124,8 +124,10 @@ export class DividersRenderer {
 	private renderDividers(container: D3Selection, range: number): void {
 		container
 			.attr('class', 'divider')
-			.attr('x1', 0).attr('y1', 0)
-			.attr('x2', range).attr('y2', 0)
+			.attr('x1', 0)
+			.attr('y1', 0)
+			.attr('x2', range)
+			.attr('y2', 0)
 			.attr('stroke', this.config.dividersConfig.dividerColor)
 			.attr('stroke-width', this.config.dividersConfig.strokeWidth);
 	}

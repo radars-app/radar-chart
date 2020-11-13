@@ -68,7 +68,8 @@ export class RadarChartRenderer {
 
 	private initZoom(container: D3Selection): void {
 		this.svg.call(zoom().on('zoom', function (event: D3ZoomEvent): void {
-			container.attr('transform', event.transform.toString());
+			container
+				.attr('transform', event.transform.toString());
 		}));
 	}
 
