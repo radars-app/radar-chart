@@ -7,7 +7,6 @@ import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { calculateNewRingRange } from '../helpers/calculate-ring-range';
 import { select } from 'd3';
 import { LabelsRenderer } from './labels/labels.renderer';
-import './dividers.scss';
 
 export class DividersRenderer {
 
@@ -18,7 +17,7 @@ export class DividersRenderer {
 		private model: RadarChartModel,
 		public readonly config$: BehaviorSubject<RadarChartConfig>
 	) {
-		this.labelsRenderer = new LabelsRenderer(new BehaviorSubject(this.config));
+		this.labelsRenderer = new LabelsRenderer(this.config$);
 		this.initBehavior();
 	}
 
@@ -29,7 +28,6 @@ export class DividersRenderer {
 	private initBehavior(): void {
 		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectorNames$, this.model.ringNames$])
 		.subscribe(([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
-			this.labelsRenderer.config$.next(config);
 			const range: number = this.calculateRange(rangeX, rangeY, config);
 			const dividers: Divider[] = this.calculateDividers(sectorNames);
 			this.render(range, dividers, ringNames);

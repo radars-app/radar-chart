@@ -1,4 +1,3 @@
-import './radar-chart.scss';
 import { RingsConfig } from '../rings/rings.config';
 import { DividersConfig } from '../dividers/dividers.config';
 

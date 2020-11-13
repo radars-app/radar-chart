@@ -41,13 +41,13 @@ export class RadarChartRenderer {
 		this.ringsRenderer = new RingsRenderer(
 			this.ringsContainer,
 			this.model,
-			new BehaviorSubject(this.config)
+			this.config$
 		);
 
 		this.dividersRenderer = new DividersRenderer(
 			this.dividersContainer,
 			this.model,
-			new BehaviorSubject(this.config)
+			this.config$
 		);
 
 		this.subscribeConfig();
@@ -55,8 +55,6 @@ export class RadarChartRenderer {
 
 	private subscribeConfig(): void {
 		this.config$.subscribe((config: RadarChartConfig) => {
-			this.ringsRenderer.config$.next(config);
-			this.dividersRenderer.config$.next(config);
 			this.render();
 		});
 	}
