@@ -1,4 +1,3 @@
-import { RadarChartModel } from 'dist';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 
 export function calculateOuterRingRadius(rangeX: number, rangeY: number, config: RadarChartConfig): number {
