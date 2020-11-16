@@ -2,5 +2,6 @@ node_modules
 coverage
 dist
 .vscode
+.stylelintcache
 
 /src/radar-demo.ts
