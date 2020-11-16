@@ -1,0 +1,32 @@
+{
+	"defaultSeverity": "error",
+	"extends": "stylelint-config-standard",
+	"rules": {
+		"indentation": "tab",
+		"string-quotes": "single",
+		"selector-combinator-space-after": "always",
+		"comment-whitespace-inside": "always",
+		"rule-empty-line-before": null,
+		"selector-pseudo-class-parentheses-space-inside": "never",
+		"no-empty-source": null,
+		"no-descending-specificity": null,
+		"selector-type-no-unknown": [
+			true,
+			{
+				"ignoreTypes": ["/^[a-zA-Z]([a-zA-Z0-9]*-[a-zA-Z0-9]+)+/"]
+			}
+		],
+		"at-rule-no-unknown": [
+			true,
+			{
+				"ignoreAtRules": ["/^mat-/", "mixin", "include", "extend", "each", "if", "function", "return", "content"]
+			}
+		],
+		"selector-pseudo-element-no-unknown": [
+			true,
+			{
+				"ignorePseudoElements": ["ng-deep"]
+			}
+		]
+	}
+}

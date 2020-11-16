@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+tools/schematics
+tools/.temp
+**/*.md
+sonar-project.properties
+**/*.svg
+.prettierignore
+/.*
