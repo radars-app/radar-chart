@@ -1,5 +1,6 @@
 import { RingsConfig } from '../rings/rings.config';
 import { DividersConfig } from '../dividers/dividers.config';
+import { DotsConfig } from '../dots/dots.config';
 
 export class RadarChartConfig {
 	public backgroundColor: string;
@@ -8,6 +9,7 @@ export class RadarChartConfig {
 	public marginTopBottom: number;
 	public readonly ringsConfig: RingsConfig;
 	public readonly dividersConfig: DividersConfig;
+	public readonly dotsConfig: DotsConfig;
 
 	constructor() {
 		this.offsetLeft = 540;
@@ -16,5 +18,6 @@ export class RadarChartConfig {
 		this.backgroundColor = '#F0F4F8';
 		this.ringsConfig = new RingsConfig();
 		this.dividersConfig = new DividersConfig();
+		this.dotsConfig = new DotsConfig();
 	}
 }

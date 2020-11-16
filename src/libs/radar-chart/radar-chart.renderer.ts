@@ -8,6 +8,7 @@ import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { SubscriptionPool } from '../helpers/subscription-pool';
+import { DotsRenderer } from '../dots/dots.renderer';
 
 export class RadarChartRenderer {
 
@@ -20,6 +21,9 @@ export class RadarChartRenderer {
 
 	private dividersRenderer: DividersRenderer;
 	private dividersContainer: D3Selection;
+
+	private dotsRenderer: DotsRenderer;
+	private dotsContainer: D3Selection;
 
 	constructor(
 		private svgElement: SVGElement,
@@ -48,6 +52,12 @@ export class RadarChartRenderer {
 
 		this.dividersRenderer = new DividersRenderer(
 			this.dividersContainer,
+			this.model,
+			this.config$
+		);
+
+		this.dotsRenderer = new DotsRenderer(
+			this.dotsContainer,
 			this.model,
 			this.config$
 		);
@@ -89,13 +99,17 @@ export class RadarChartRenderer {
 
 		this.initZoom(zoomContainer);
 
-		this.ringsContainer = this.container.select('g.radar-chart__zoom-container')
+		this.ringsContainer = zoomContainer
 			.append('g')
 			.attr('class', 'radar-chart__rings');
 
-		this.dividersContainer = this.container.select('g.radar-chart__zoom-container')
+		this.dividersContainer = zoomContainer
 			.append('g')
 			.attr('class', 'radar-chart__dividers');
+
+		this.dotsContainer = zoomContainer
+			.append('g')
+			.attr('class', 'radar-chart__dots');
 	}
 
 	private render(): void {
@@ -108,6 +122,9 @@ export class RadarChartRenderer {
 			.attr('transform', `translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`);
 
 		this.dividersContainer
+			.attr('transform', `translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`);
+
+		this.dotsContainer
 			.attr('transform', `translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`);
 	}
 }
