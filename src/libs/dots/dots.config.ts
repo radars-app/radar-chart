@@ -1,8 +1,6 @@
 export class DotsConfig {
-	public dotOffset: number = 4;
-	public dotRadius: number = 12;
+	public dotOffset: number = 3;
+	public dotRadius: number = 11;
 
-	constructor() {
-
-	}
+	constructor() {}
 }
