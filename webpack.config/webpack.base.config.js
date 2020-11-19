@@ -1,6 +1,6 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CleanWebpackPlugin  = require('clean-webpack-plugin');
+const CleanWebpackPlugin  = require('clean-webpack-plugin').CleanWebpackPlugin;
 const environment = require('../environment');
 
 const PATHS = {
