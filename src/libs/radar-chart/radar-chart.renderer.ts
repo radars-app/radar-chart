@@ -4,17 +4,19 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Size } from '../../models/size';
-import { select, zoom, ZoomBehavior } from 'd3';
+import d3, { select, zoom, ZoomBehavior, ZoomTransform, zoomTransform } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { SubscriptionPool } from '../helpers/subscription-pool';
 import { DotsRenderer } from '../dots/dots.renderer';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
+import { D3ZoomBehavior } from 'src/models/types/d3-zoom-behavior';
 
 export class RadarChartRenderer {
 	private subscriptions: SubscriptionPool;
 
 	private container: D3Selection;
+	private scale: number;
 
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
@@ -33,7 +35,6 @@ export class RadarChartRenderer {
 	) {
 		this.initContainers();
 		this.initSizing();
-		this.initRange();
 	}
 
 	private get config(): RadarChartConfig {
@@ -66,38 +67,27 @@ export class RadarChartRenderer {
 		});
 	}
 
-	private initZoom(zoomContainer: D3Selection): void {
-		const zoomBehavior: any = zoom().on('zoom', function (event: D3ZoomEvent): void {
+	private initZoomBehavior(zoomContainer: D3Selection): void {
+		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
 			zoomContainer.attr('transform', event.transform.toString());
 		});
 
 		this.container.call(zoomBehavior);
 
-		zoomBehavior.scaleTo(this.container, 1);
-	}
-
-	private initRange(): void {
-		this.model.rangeX$.next(1366); // TODO move range into the config
-		this.model.rangeY$.next(662);
+		this.scale = this.calculateInitialScale();
+		zoomBehavior.scaleBy(this.container, this.scale, [0, 0]);
 	}
 
 	private calculateInitialScale(): number {
-		// TODO: refactor this after rewriting into
-		const outerRingRadius: number = calculateOuterRingRadius(
-			this.model.rangeX$.getValue(),
-			this.model.rangeY$.getValue(),
-			this.config$.getValue()
-		);
-
-		return this.model.rangeY$.getValue() / outerRingRadius;
+		return this.size.height / this.model.rangeY$.getValue();
 	}
 
 	private initContainers(): void {
-		this.container = select(this.svgElement);
+		this.container = select(this.svgElement).append('g').attr('class', 'radar-chart__container');
 
 		const zoomContainer: D3Selection = this.container.append('g').attr('class', 'radar-chart__zoom-container');
 
-		this.initZoom(zoomContainer);
+		this.initZoomBehavior(zoomContainer);
 
 		this.ringsContainer = zoomContainer.append('g').attr('class', 'radar-chart__rings');
 
@@ -107,19 +97,12 @@ export class RadarChartRenderer {
 	}
 
 	private render(): void {
-		this.container.style('background', this.config.backgroundColor).attr('width', this.size.width).attr('height', this.size.height);
+		select(this.svgElement)
+			.style('background', this.config.backgroundColor)
+			.attr('width', this.size.width)
+			.attr('height', this.size.height);
 
-		this.ringsContainer.attr(
-			'transform',
-			`translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`
-		);
-
-		this.dividersContainer.attr(
-			'transform',
-			`translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`
-		);
-
-		this.dotsContainer.attr(
+		this.container.attr(
 			'transform',
 			`translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`
 		);
