@@ -1,13 +1,13 @@
-.dots {
-	&__track {
-		stroke: red;
-		fill: transparent;
-		stroke-opacity: 0.8;
-	}
+.track {
+	stroke: red;
+	fill: transparent;
+	stroke-opacity: 0.5;
+}
 
-	&__dot {
+.point {
+	&--shadow {
 		stroke: red;
 		fill: transparent;
-		stroke-opacity: 0.8;
+		stroke-opacity: 0.5;
 	}
 }

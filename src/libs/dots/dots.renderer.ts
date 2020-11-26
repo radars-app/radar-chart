@@ -1,67 +1,47 @@
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { D3Selection } from '../../models/types/d3-selection';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
-import { calculateRingsRadiuses } from '../helpers/calculate-rings-radiuses';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
-import './dots.scss';
+import { TracksRenderer } from './tracks/tracks.renderer';
+//import './dots.scss';
+import { ShadowPointsRenderer } from './shadow-points/shadow-points.renderer';
 
 export class DotsRenderer {
-	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
-		this.initBehavior();
-	}
+	private tracksRenderer: TracksRenderer;
+	private tracksContainer: D3Selection;
+
+	private shadowPointsRenderer: ShadowPointsRenderer;
+	private shadowPointsContainer: D3Selection;
 
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();
 	}
 
 	private get dotSpace(): number {
-		return 2 * this.config.dotsConfig.dotOffset + this.config.dotsConfig.dotRadius;
+		return 2 * this.config.dotsConfig.dotOffset + 2 * this.config.dotsConfig.dotRadius;
+	}
+
+	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
+		this.tracksRenderer = new TracksRenderer(config$);
+		this.shadowPointsRenderer = new ShadowPointsRenderer(config$);
+		this.initContainers();
+		this.initBehavior();
 	}
 
 	private initBehavior(): void {
 		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectorNames$, this.model.ringNames$]).subscribe(
 			([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
 				const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
-				const ringRadiuses: number[] = calculateRingsRadiuses(outerRingRadius, ringNames);
-				const trackRadiuses: number[] = this.calculateTrackRadiuses(ringRadiuses, outerRingRadius);
-				console.log(trackRadiuses);
-				trackRadiuses.forEach((radius: number) => {
-					this.renderTracks(this.container, outerRingRadius, radius);
-				});
+				this.tracksRenderer.renderTracks(this.tracksContainer, outerRingRadius, ringNames, this.dotSpace);
+				this.shadowPointsRenderer.renderShadowPoints(this.shadowPointsContainer, ringNames, sectorNames, this.dotSpace);
 			}
 		);
 	}
 
-	private calculateTrackRadiuses(ringRadiuses: number[], outerRingRadius: number): number[] {
-		const trackRadiuses: number[] = [];
+	private initContainers(): void {
+		this.tracksContainer = this.container.append('g').classed('radar-chart__tracks', true);
 
-		const radiusDelta: number = ringRadiuses[0];
-		ringRadiuses.forEach((ringRadius: number, index: number) => {
-			trackRadiuses.push(...this.getRingsTracksRadiuses(ringRadius, radiusDelta));
-		});
-		return trackRadiuses;
-	}
-
-	private getRingsTracksRadiuses(ringRadius: number, ringRadiusDelta: number): number[] {
-		const tracksQuantity: number = Math.floor(ringRadiusDelta / this.dotSpace);
-		const trackOffset: number = (this.dotSpace + (ringRadiusDelta % this.dotSpace)) / 2;
-		const startRadius: number = ringRadius - ringRadiusDelta + trackOffset;
-
-		return [...new Array(tracksQuantity)].map((_: undefined, trackIndex: number) => {
-			return startRadius + this.dotSpace * trackIndex;
-		});
-	}
-
-	private renderTracks(container: D3Selection, outerRingRadius: number, radius: number): D3Selection {
-		return container
-			.append('path')
-			.attr(
-				'd',
-				`M ${outerRingRadius - radius}, ${outerRingRadius}
-      	a ${radius},${radius} 0 1,0 ${radius * 2},0
-				a ${radius},${radius} 0 1,0 -${radius * 2},0`
-			)
-			.classed('dots__track', true);
+		this.shadowPointsContainer = this.container.append('g').classed('radar-chart__points', true);
 	}
 }

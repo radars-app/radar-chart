@@ -1,27 +1,10 @@
 {
-	"compileOnSave": false,
 	"compilerOptions": {
-		"baseUrl": "./",
-		"outDir": "./dist",
-		"sourceMap": true,
-		"declaration": true,
-		"downlevelIteration": true,
-		"experimentalDecorators": true,
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"importHelpers": true,
-		"target": "es2015",
-		"lib": [
-			"es2018",
-			"dom"
-		],
-		"esModuleInterop": true
+	  "target": "es5",
+	  "module": "commonjs",
+	  "declaration": true,
+	  "outDir": "./dist",
 	},
-	"include": [
-		"./**/*.ts",
-		"src/index.ts"
-	],
-	"exclude": [
-			"node_modules",
-	]
+	"include": ["src"],
+	"exclude": ["node_modules"]
 }

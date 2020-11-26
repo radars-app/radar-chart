@@ -9,14 +9,9 @@ import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius
 import { select } from 'd3';
 
 export class DividersRenderer {
-
 	private labelsRenderer: LabelsRenderer;
 
-	constructor(
-		private container: D3Selection,
-		private model: RadarChartModel,
-		private config$: BehaviorSubject<RadarChartConfig>
-	) {
+	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
 		this.labelsRenderer = new LabelsRenderer(this.config$);
 		this.initBehavior();
 	}
@@ -26,18 +21,13 @@ export class DividersRenderer {
 	}
 
 	private initBehavior(): void {
-		combineLatest([
-			this.model.rangeX$,
-			this.model.rangeY$,
-			this.config$,
-			this.model.sectorNames$,
-			this.model.ringNames$
-		])
-		.subscribe(([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
-			const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
-			const dividers: Divider[] = this.createDividerModels(sectorNames);
-			this.render(outerRingRadius, dividers, ringNames);
-		});
+		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectorNames$, this.model.ringNames$]).subscribe(
+			([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
+				const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
+				const dividers: Divider[] = this.createDividerModels(sectorNames);
+				this.render(outerRingRadius, dividers, ringNames);
+			}
+		);
 	}
 
 	private createDividerModels(sectorNames: string[]): Divider[] {
@@ -53,7 +43,7 @@ export class DividersRenderer {
 		return sectorNames.map(() => {
 			return {
 				isLabeled: false,
-				rotation: currentDegree += deltaDegree
+				rotation: currentDegree += deltaDegree,
 			};
 		});
 	}
@@ -69,6 +59,8 @@ export class DividersRenderer {
 				divider.isLabeled = true;
 				return true;
 			}
+
+			return false;
 		});
 	}
 
@@ -84,7 +76,7 @@ export class DividersRenderer {
 
 	private update(container: D3Selection, range: number, ringNames: string[]): void {
 		const self: DividersRenderer = this;
-		container.each(function(dividerModel: Divider): void {
+		container.each(function (dividerModel: Divider): void {
 			const dividerContainer: D3Selection = select(this);
 			const dividerLine: D3Selection = dividerContainer.select('line.divider__line');
 			self.renderDividersContainer(dividerContainer, range);
@@ -99,7 +91,7 @@ export class DividersRenderer {
 
 	private enter(container: D3Selection, range: number, ringNames: string[]): void {
 		const self: DividersRenderer = this;
-		container.each(function(dividerModel: Divider): void {
+		container.each(function (dividerModel: Divider): void {
 			const dividerContainer: D3Selection = select(this);
 			const divider: D3Selection = dividerContainer.append('line');
 			self.renderDividersContainer(dividerContainer, range);
@@ -119,9 +111,7 @@ export class DividersRenderer {
 	private renderDividersContainer(container: D3Selection, range: number): void {
 		container
 			.attr('class', 'divider')
-			.attr('transform', (divider: Divider) =>
-				`translate(${range}, ${range}) rotate(${divider.rotation}, 0, 0)`
-			);
+			.attr('transform', (divider: Divider) => `translate(${range}, ${range}) rotate(${divider.rotation}, 0, 0)`);
 	}
 
 	private renderDividers(container: D3Selection, range: number): void {
