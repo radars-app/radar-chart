@@ -4,4 +4,4 @@ dist
 .vscode
 .stylelintcache
 
-/src/radar-demo.ts
+/src/demo/

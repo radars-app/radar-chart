@@ -1,6 +1,6 @@
 {
 	"name": "radar-chart-project",
-	"version": "0.0.24",
+	"version": "0.0.25",
 	"description": "",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -11,8 +11,8 @@
 		"watch-tsc": "tsc --watch",
 		"watch-scss": "sass --watch src/style.scss dist/style.css",
 		"watch-demo": "watchify dist/demo/demo.js -o src/demo/demo.js",
-		"build": "tsc & (sass src/style.scss dist/style.css)",
-		"build:dev": "(npm run-script build) & (browserify dist/demo/demo.js -o src/demo/demo.js)",
+		"build": "tsc && (sass src/style.scss dist/style.css)",
+		"build:dev": "(npm run-script build) && (browserify dist/demo/demo.js -o src/demo/demo.js)",
 		"lint": "tslint --project tslint.json",
 		"test": "karma start",
 		"test-ci": "karma start --single-run",
