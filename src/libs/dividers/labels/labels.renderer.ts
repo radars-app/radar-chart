@@ -4,10 +4,8 @@ import { D3Selection } from '../../../models/types/d3-selection';
 import { LabelsConfig } from './labels.config';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { selectAll } from 'd3';
-import './labels.scss';
 
 export class LabelsRenderer {
-
 	constructor(private config$: BehaviorSubject<RadarChartConfig>) {}
 
 	private get config(): RadarChartConfig {
@@ -44,7 +42,10 @@ export class LabelsRenderer {
 			.attr('width', (label: DividersLabel) => label.backgroundWidth + 7)
 			.attr('height', this.labelsConfig.lineHeight)
 			.attr('fill', this.config.backgroundColor)
-			.attr('transform', (label: DividersLabel) => `translate(${label.x - label.backgroundWidth / 2 - 3}, ${-this.labelsConfig.lineHeight / 2})`);
+			.attr(
+				'transform',
+				(label: DividersLabel) => `translate(${label.x - label.backgroundWidth / 2 - 3}, ${-this.labelsConfig.lineHeight / 2})`
+			);
 	}
 
 	private renderText(container: D3Selection): void {
@@ -53,13 +54,13 @@ export class LabelsRenderer {
 			.text((label: DividersLabel) => label.text)
 			.attr('x', (label: DividersLabel) => label.x)
 			.attr('font-family', this.labelsConfig.fontFamily)
-			.attr('font-size',  this.labelsConfig.fontSize)
+			.attr('font-size', this.labelsConfig.fontSize)
 			.attr('fill', this.labelsConfig.textColor)
 			.attr('dominant-baseline', 'middle');
 	}
 
 	private initBackgroundWidth(text: D3Selection): void {
-		text.each(function(label: DividersLabel): void {
+		text.each(function (label: DividersLabel): void {
 			label.backgroundWidth = this.getComputedTextLength();
 		});
 	}
@@ -72,7 +73,7 @@ export class LabelsRenderer {
 		const labels: DividersLabel[] = ringNames.map((ringName: string) => {
 			return {
 				text: ringName,
-				x: currentX += deltaX
+				x: currentX += deltaX,
 			};
 		});
 		return labels;

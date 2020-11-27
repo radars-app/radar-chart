@@ -1,40 +1,25 @@
 import { D3Selection } from '../../models/types/d3-selection';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
-import { combineLatest} from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { SubscriptionPool } from '../helpers/subscription-pool';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
+import { calculateRingsRadiuses } from '../helpers/calculate-rings-radiuses';
 
 export class RingsRenderer {
-
-	private subscriptions: SubscriptionPool;
-
-	constructor(
-		private container: D3Selection,
-		private model: RadarChartModel,
-		private config$: BehaviorSubject<RadarChartConfig>
-	) {
+	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
 		this.initBehavior();
 	}
 
 	private initBehavior(): void {
-		combineLatest([
-			this.model.rangeX$,
-			this.model.rangeY$,
-			this.config$,
-			this.model.ringNames$
-		])
-		.subscribe(([rangeX, rangeY, config, ringNames]: [number, number, RadarChartConfig, string[]]) => {
-			const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
-			const ringRadiuses: number[] = this.calculateRingsRadiuses(outerRingRadius, ringNames);
-			this.render(outerRingRadius, ringRadiuses);
-		});
-	}
-
-	private calculateRingsRadiuses(range: number, ringNames: string[]): number[] {
-		const deltaRadius: number = range / ringNames.length;
-		return ringNames.map((name: string, index: number) =>  (index + 1) * deltaRadius);
+		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.ringNames$]).subscribe(
+			([rangeX, rangeY, config, ringNames]: [number, number, RadarChartConfig, string[]]) => {
+				const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
+				const ringRadiuses: number[] = calculateRingsRadiuses(outerRingRadius, ringNames);
+				this.render(outerRingRadius, ringRadiuses);
+			}
+		);
 	}
 
 	private render(range: number, ringsRadiuses: number[]): void {

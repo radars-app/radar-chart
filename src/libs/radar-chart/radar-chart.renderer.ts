@@ -7,19 +7,21 @@ import { Size } from '../../models/size';
 import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
-import { SubscriptionPool } from '../helpers/subscription-pool';
+import { DotsRenderer } from '../dots/dots.renderer';
+import { D3ZoomBehavior } from '../../models/types/d3-zoom-behavior';
 
 export class RadarChartRenderer {
-
-	private subscriptions: SubscriptionPool;
-
 	private container: D3Selection;
+	private scale: number;
 
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
 
 	private dividersRenderer: DividersRenderer;
 	private dividersContainer: D3Selection;
+
+	private dotsRenderer: DotsRenderer;
+	private dotsContainer: D3Selection;
 
 	constructor(
 		private svgElement: SVGElement,
@@ -40,17 +42,11 @@ export class RadarChartRenderer {
 	}
 
 	public start(): void {
-		this.ringsRenderer = new RingsRenderer(
-			this.ringsContainer,
-			this.model,
-			this.config$
-		);
+		this.ringsRenderer = new RingsRenderer(this.ringsContainer, this.model, this.config$);
 
-		this.dividersRenderer = new DividersRenderer(
-			this.dividersContainer,
-			this.model,
-			this.config$
-		);
+		this.dividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
+
+		this.dotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
 
 		this.subscribeConfig();
 	}
@@ -63,51 +59,48 @@ export class RadarChartRenderer {
 
 	private initSizing(): void {
 		this.size$.subscribe((size: Size) => {
-			this.setRange(size);
 			this.render();
 		});
 	}
 
-	private initZoom(zoomContainer: D3Selection): void {
-		this.container.call(zoom().on('zoom', function (event: D3ZoomEvent): void {
-			zoomContainer
-				.attr('transform', event.transform.toString());
-		}));
+	private initZoomBehavior(zoomContainer: D3Selection): void {
+		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
+			zoomContainer.attr('transform', event.transform.toString());
+		});
+
+		this.container.call(zoomBehavior);
+
+		this.scale = this.calculateInitialScale();
+		zoomBehavior.scaleBy(this.container, this.scale, [0, 0]);
 	}
 
-	private setRange(size: Size): void {
-		this.model.rangeX$.next(size.width);
-		this.model.rangeY$.next(size.height);
+	private calculateInitialScale(): number {
+		return this.size.height / this.model.rangeY$.getValue();
 	}
 
 	private initContainers(): void {
-		this.container = select(this.svgElement);
+		this.container = select(this.svgElement).append('g').attr('class', 'radar-chart__container');
 
-		const zoomContainer: D3Selection = this.container
-			.append('g')
-			.attr('class', 'radar-chart__zoom-container');
+		const zoomContainer: D3Selection = this.container.append('g').attr('class', 'radar-chart__zoom-container');
 
-		this.initZoom(zoomContainer);
+		this.initZoomBehavior(zoomContainer);
 
-		this.ringsContainer = this.container.select('g.radar-chart__zoom-container')
-			.append('g')
-			.attr('class', 'radar-chart__rings');
+		this.ringsContainer = zoomContainer.append('g').attr('class', 'radar-chart__rings');
 
-		this.dividersContainer = this.container.select('g.radar-chart__zoom-container')
-			.append('g')
-			.attr('class', 'radar-chart__dividers');
+		this.dividersContainer = zoomContainer.append('g').attr('class', 'radar-chart__dividers');
+
+		this.dotsContainer = zoomContainer.append('g').attr('class', 'radar-chart__dots');
 	}
 
 	private render(): void {
-		this.container
+		select(this.svgElement)
 			.style('background', this.config.backgroundColor)
 			.attr('width', this.size.width)
 			.attr('height', this.size.height);
 
-		this.ringsContainer
-			.attr('transform', `translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`);
-
-		this.dividersContainer
-			.attr('transform', `translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`);
+		this.container.attr(
+			'transform',
+			`translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`
+		);
 	}
 }
