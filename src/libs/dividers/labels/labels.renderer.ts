@@ -4,7 +4,6 @@ import { D3Selection } from '../../../models/types/d3-selection';
 import { LabelsConfig } from './labels.config';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { selectAll } from 'd3';
-//import './labels.scss';
 
 export class LabelsRenderer {
 	constructor(private config$: BehaviorSubject<RadarChartConfig>) {}

@@ -8,8 +8,6 @@ import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius
 import { calculateRingsRadiuses } from '../helpers/calculate-rings-radiuses';
 
 export class RingsRenderer {
-	private subscriptions: SubscriptionPool;
-
 	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
 		this.initBehavior();
 	}

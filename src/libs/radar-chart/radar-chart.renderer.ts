@@ -4,17 +4,13 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject } from 'rxjs';
 import { Size } from '../../models/size';
-import { select, zoom, ZoomBehavior, ZoomTransform, zoomTransform } from 'd3';
+import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
-import { SubscriptionPool } from '../helpers/subscription-pool';
 import { DotsRenderer } from '../dots/dots.renderer';
-import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { D3ZoomBehavior } from '../../models/types/d3-zoom-behavior';
 
 export class RadarChartRenderer {
-	private subscriptions: SubscriptionPool;
-
 	private container: D3Selection;
 	private scale: number;
 
