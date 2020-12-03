@@ -28,8 +28,8 @@ module.exports = function (config) {
 			fixWebpackSourcePaths: true
 		},
 		karmaTypescriptConfig: {
-      tsconfig: './tsconfig.json'
-    },
+			tsconfig: './tsconfig.json'
+		},
 		reporters: ['progress', 'kjhtml', /*'coverage-istanbul'*/], //	uncomment to get coverage info
 		port: 9876,
 		colors: true,

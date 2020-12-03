@@ -12,7 +12,7 @@ export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
 	private dotsContainer: D3Selection;
 
-	private radarsDiameter: number;
+	private radarDiameter: number;
 
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();
@@ -20,7 +20,7 @@ export class DotsRenderer {
 
 	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
 		this.possiblePointsService = new PossiblePointsService(config$, model);
-		this.radarsDiameter =
+		this.radarDiameter =
 			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config$.getValue());
 		this.initContainers();
 		this.initBehavior();
@@ -39,7 +39,7 @@ export class DotsRenderer {
 	}
 
 	private initContainers(): void {
-		this.dotsContainer = this.container.attr('transform', `translate(${this.radarsDiameter}, 0) rotate(90)`);
+		this.dotsContainer = this.container.attr('transform', `translate(${this.radarDiameter}, 0) rotate(90)`);
 	}
 
 	private render(container: D3Selection, possiblePoints: Map<string, PossiblePoint[]>): void {
