@@ -1,17 +1,10 @@
 .track {
-	stroke: red;
 	fill: transparent;
-	stroke-opacity: 0.5;
 }
 
-.point {
-	&--shadow {
-		stroke: red;
-		fill: transparent;
-		stroke-opacity: 0.5;
-	}
-
-	&--edge {
-		stroke: black;
+.dot {
+	&__circle {
+		fill: black;
+		opacity: 0.5;
 	}
 }

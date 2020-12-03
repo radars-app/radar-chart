@@ -3,49 +3,120 @@ import { D3Selection } from '../../models/types/d3-selection';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
-import { TracksRenderer } from './tracks/tracks.renderer';
-import { ShadowPointsRenderer } from './shadow-points/shadow-points.renderer';
+import { RadarDot } from '../../models/radar-dot';
+import { PossiblePointsService } from './services/possible-points.service';
+import { select } from 'd3';
 
 export class DotsRenderer {
-	private tracksRenderer: TracksRenderer;
-	private tracksContainer: D3Selection;
+	private possiblePointsService: PossiblePointsService;
+	private dotsContainer: D3Selection;
 
-	private shadowPointsRenderer: ShadowPointsRenderer;
-	private shadowPointsContainer: D3Selection;
+	private radarsDiameter: number;
 
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();
 	}
 
-	private get dotSpace(): number {
-		return 2 * this.config.dotsConfig.dotOffset + 2 * this.config.dotsConfig.dotRadius;
-	}
-
 	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
-		this.tracksRenderer = new TracksRenderer(config$);
-		this.shadowPointsRenderer = new ShadowPointsRenderer(config$);
-		const radarsDiameter: number =
-			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config);
-		this.initContainers(radarsDiameter);
+		this.possiblePointsService = new PossiblePointsService(config$, model);
+		this.radarsDiameter =
+			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config$.getValue());
+		this.initContainers();
 		this.initBehavior();
 	}
 
 	private initBehavior(): void {
 		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectorNames$, this.model.ringNames$]).subscribe(
 			([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
-				const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
-				this.tracksRenderer.renderTracks(this.tracksContainer, outerRingRadius, ringNames, this.dotSpace);
-				this.shadowPointsRenderer.renderShadowPoints(this.shadowPointsContainer, ringNames, sectorNames, this.dotSpace);
+				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.getPossiblePoints(
+					this.dotsContainer,
+					this.model
+				);
+				this.render(this.container, possiblePoints);
 			}
 		);
 	}
 
-	private initContainers(radarsDiameter: number): void {
-		this.tracksContainer = this.container.append('g').classed('radar-chart__tracks', true);
+	private initContainers(): void {
+		this.dotsContainer = this.container.attr('transform', `translate(${this.radarsDiameter}, 0) rotate(90)`);
+	}
 
-		this.shadowPointsContainer = this.container
-			.append('g')
-			.classed('radar-chart__points', true)
-			.attr('transform', `translate(${radarsDiameter}, 0) rotate(90)`);
+	private render(container: D3Selection, possiblePoints: Map<string, PossiblePoint[]>): void {
+		const dots: RadarDot[] = this.model.dots$.getValue();
+
+		const dotsToUpdate: D3Selection = container.selectAll('g.dot').data(dots);
+		const dotsToEnter: D3Selection = dotsToUpdate.enter().append('g');
+		const dotsToExit: D3Selection = dotsToUpdate.exit();
+
+		this.update(dotsToUpdate, possiblePoints);
+		this.enter(dotsToEnter, possiblePoints);
+		this.exit(dotsToExit);
+	}
+
+	private enter(dots: D3Selection, points: Map<string, PossiblePoint[]>): void {
+		const self: DotsRenderer = this;
+		dots.each(function (dot: RadarDot): void {
+			const container: D3Selection = select(this);
+			container.classed('dot', true);
+
+			const circle: D3Selection = container.append('circle');
+			self.renderCircle(circle);
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.positionDot(container, point);
+		});
+	}
+
+	private update(dots: D3Selection, points: Map<string, PossiblePoint[]>): void {
+		const self: DotsRenderer = this;
+		dots.each(function (dot: RadarDot): void {
+			const container: D3Selection = select(this);
+			container.classed('dot', true);
+
+			const circle: D3Selection = container.select('circle.dot__circle');
+			self.renderCircle(circle);
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.positionDot(container, point);
+		});
+	}
+
+	private exit(dots: D3Selection): void {
+		dots.remove();
+	}
+
+	private renderCircle(container: D3Selection): void {
+		container.classed('dot__circle', true).attr('r', this.config.dotsConfig.dotRadius);
+	}
+
+	private positionDot(container: D3Selection, point: PossiblePoint): void {
+		container.attr('transform', `translate(${point.x}, ${point.y})`);
+	}
+
+	private choosePoint(dot: RadarDot, possiblePoints: Map<string, PossiblePoint[]>): PossiblePoint {
+		const sectorsPoints: PossiblePoint[] = possiblePoints.get(`${dot.ring}-${dot.sector}`);
+		const possiblePointsForDot: PossiblePoint[] = sectorsPoints.filter((point: PossiblePoint) => {
+			return !Boolean(point.isOccupied);
+		});
+		const pointsToAvoid: PossiblePoint[] = sectorsPoints.filter((point: PossiblePoint) => {
+			return point.isEdgePoint || point.isOccupied;
+		});
+
+		const lengthDiffs: number[] = possiblePointsForDot.map((possiblePoint: PossiblePoint) => {
+			const lengthsBetween: number[] = pointsToAvoid.map((pointToAvoid: PossiblePoint) => {
+				const diffX: number = pointToAvoid.x - possiblePoint.x;
+				const diffY: number = pointToAvoid.y - possiblePoint.y;
+				const lengthBetween: number = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
+				return lengthBetween;
+			});
+
+			const lengthDifference: number = lengthsBetween.reduce((sum: number, length: number) => {
+				return sum + Math.abs(length - lengthsBetween[0]);
+			}, 0);
+			return lengthDifference;
+		});
+
+		const maxLength: number = Math.min(...lengthDiffs);
+		const bestPointIndex: number = lengthDiffs.findIndex((length: number) => length === maxLength);
+		possiblePointsForDot[bestPointIndex].isOccupied = true;
+		return possiblePointsForDot[bestPointIndex];
 	}
 }

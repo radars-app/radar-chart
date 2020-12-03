@@ -52,6 +52,7 @@ export class RadarChartRenderer {
 	}
 
 	private subscribeConfig(): void {
+		// combine latest
 		this.config$.subscribe((config: RadarChartConfig) => {
 			this.render();
 		});
