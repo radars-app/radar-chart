@@ -2,7 +2,7 @@ import { D3Selection } from '../../models/types/d3-selection';
 import { RadarChartConfig } from './radar-chart.config';
 import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { Size } from '../../models/size';
 import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
@@ -30,7 +30,7 @@ export class RadarChartRenderer {
 		private size$: BehaviorSubject<Size>
 	) {
 		this.initContainers();
-		this.initSizing();
+		this.initBehavior();
 	}
 
 	private get config(): RadarChartConfig {
@@ -47,18 +47,10 @@ export class RadarChartRenderer {
 		this.dividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
 
 		this.dotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
-
-		this.subscribeConfig();
 	}
 
-	private subscribeConfig(): void {
-		this.config$.subscribe((config: RadarChartConfig) => {
-			this.render();
-		});
-	}
-
-	private initSizing(): void {
-		this.size$.subscribe((size: Size) => {
+	private initBehavior(): void {
+		combineLatest([this.config$, this.size$]).subscribe(() => {
 			this.render();
 		});
 	}

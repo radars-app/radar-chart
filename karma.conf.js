@@ -17,7 +17,7 @@ module.exports = function (config) {
 		],
 		preprocessors: {
 			'src/**/*.ts': ['karma-typescript'],
-			'src/**/*.spec.ts': ['karma-typescript']
+			'src/**/*.spec.ts': ['karma-typescript'],
 		},
 		client: {
 			clearContext: false // leave Jasmine Spec Runner output visible in browser
@@ -26,6 +26,9 @@ module.exports = function (config) {
 			dir: require('path').join(__dirname, './coverage'),
 			reports: ['html', 'lcovonly', 'text-summary'],
 			fixWebpackSourcePaths: true
+		},
+		karmaTypescriptConfig: {
+			tsconfig: './tsconfig.json'
 		},
 		reporters: ['progress', 'kjhtml', /*'coverage-istanbul'*/], //	uncomment to get coverage info
 		port: 9876,

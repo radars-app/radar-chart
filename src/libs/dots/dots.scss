@@ -1,17 +1,12 @@
 .track {
-	stroke: red;
 	fill: transparent;
-	stroke-opacity: 0.5;
 }
 
-.point {
-	&--shadow {
-		stroke: red;
-		fill: transparent;
-		stroke-opacity: 0.5;
-	}
-
-	&--edge {
-		stroke: black;
+.dot {
+	&__number {
+		cursor: default;
+		user-select: none;
+		text-anchor: middle;
+		transform: rotate(-90deg);
 	}
 }
