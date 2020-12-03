@@ -3,7 +3,6 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
 import { combineLatest } from 'rxjs';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
-import { SubscriptionPool } from '../helpers/subscription-pool';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { calculateRingsRadiuses } from '../helpers/calculate-rings-radiuses';
 

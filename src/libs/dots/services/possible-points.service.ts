@@ -1,6 +1,5 @@
-import { arc } from 'd3';
 import { BehaviorSubject } from 'rxjs';
-import { D3Arc } from '../../../models/types/d3-arc';
+import { Sector } from '../../../models/sector';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { calculateOuterRingRadius } from '../../helpers/calculate-outer-ring-radius';
 import { RadarChartConfig } from '../../radar-chart/radar-chart.config';
@@ -20,7 +19,6 @@ export class PossiblePointsService {
 		const rangeY: number = model.rangeY$.getValue();
 		const ringNames: string[] = model.ringNames$.getValue();
 		const config: RadarChartConfig = this.config$.getValue();
-		const sectorNames: string[] = model.sectorNames$.getValue();
 
 		const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
 		this.tracksService.renderTracks(container, outerRingRadius, ringNames);
@@ -34,13 +32,13 @@ export class PossiblePointsService {
 	private calculatePossiblePoints(trackElements: SVGPathElement[]): Map<string, PossiblePoint[]> {
 		const possiblePoints: Map<string, PossiblePoint[]> = new Map();
 		const ringNames: string[] = this.model.ringNames$.getValue();
-		const sectorNames: string[] = this.model.sectorNames$.getValue();
+		const sectors: Sector[] = this.model.sectors$.getValue();
 
-		sectorNames.forEach((sectorName: string, sectorIndex: number) => {
+		sectors.forEach((sector: Sector, sectorIndex: number) => {
 			trackElements.forEach((track: SVGPathElement, trackIndex: number) => {
-				const pointKey: string = `${this.getRingNameByTrackIndex(ringNames, trackElements.length, trackIndex)}-${sectorName}`;
+				const pointKey: string = `${this.getRingNameByTrackIndex(ringNames, trackElements.length, trackIndex)}-${sector.name}`;
 				const isEdgeTrack: boolean = this.isSectorsEdgeTrack(ringNames.length, trackElements.length, trackIndex);
-				const sectorPoints: PossiblePoint[] = this.getPointsOnSectorsTrack(track, sectorIndex, sectorNames.length, isEdgeTrack);
+				const sectorPoints: PossiblePoint[] = this.getPointsOnSectorsTrack(track, sectorIndex, sectors.length, isEdgeTrack);
 				this.pushPossiblePoint(possiblePoints, pointKey, sectorPoints);
 			});
 		});
@@ -90,7 +88,7 @@ export class PossiblePointsService {
 			const possiblePoint: PossiblePoint = {
 				x: point.x,
 				y: point.y,
-				isEdgePoint: (isEdgeTrack && isEdgePoint) || (isEdgeTrack && isCenterPont),
+				isEdgePoint: isEdgeTrack && (isEdgePoint || isCenterPont),
 			};
 			return possiblePoint;
 		});

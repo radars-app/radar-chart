@@ -6,6 +6,7 @@ import { RadarChartModel } from '../radar-chart/radar-chart.model';
 import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
 import { select } from 'd3';
+import { Sector } from '../../models/sector';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -26,8 +27,8 @@ export class DotsRenderer {
 	}
 
 	private initBehavior(): void {
-		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectorNames$, this.model.ringNames$]).subscribe(
-			([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
+		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectors$, this.model.ringNames$]).subscribe(
+			([rangeX, rangeY, config, sectors, ringNames]: [number, number, RadarChartConfig, Sector[], string[]]) => {
 				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.getPossiblePoints(
 					this.dotsContainer,
 					this.model
@@ -60,7 +61,12 @@ export class DotsRenderer {
 			container.classed('dot', true);
 
 			const circle: D3Selection = container.append('circle');
-			self.renderCircle(circle);
+			const dotColor: string = self.getColorBySectorName(dot.sector);
+			self.renderCircle(circle, dotColor);
+
+			const number: D3Selection = container.append('text');
+			self.renderNumber(number, dot.number);
+
 			const point: PossiblePoint = self.choosePoint(dot, points);
 			self.positionDot(container, point);
 		});
@@ -73,7 +79,12 @@ export class DotsRenderer {
 			container.classed('dot', true);
 
 			const circle: D3Selection = container.select('circle.dot__circle');
-			self.renderCircle(circle);
+			const dotColor: string = self.getColorBySectorName(dot.sector);
+			self.renderCircle(circle, dotColor);
+
+			const number: D3Selection = container.select('text.dot__number');
+			self.renderNumber(number, dot.number);
+
 			const point: PossiblePoint = self.choosePoint(dot, points);
 			self.positionDot(container, point);
 		});
@@ -83,8 +94,18 @@ export class DotsRenderer {
 		dots.remove();
 	}
 
-	private renderCircle(container: D3Selection): void {
-		container.classed('dot__circle', true).attr('r', this.config.dotsConfig.dotRadius);
+	private renderCircle(container: D3Selection, color: string): void {
+		container.classed('dot__circle', true).attr('r', this.config.dotsConfig.dotRadius).attr('fill', color);
+	}
+
+	private renderNumber(container: D3Selection, number: number): void {
+		container
+			.classed('dot__number', true)
+			.attr('fill', 'white')
+			.attr('font-family', this.config.dotsConfig.numberFontFamily)
+			.attr('font-size', this.config.dotsConfig.numberFontSize)
+			.attr('dominant-baseline', 'central')
+			.text(number);
 	}
 
 	private positionDot(container: D3Selection, point: PossiblePoint): void {
@@ -118,5 +139,11 @@ export class DotsRenderer {
 		const bestPointIndex: number = lengthDiffs.findIndex((length: number) => length === maxLength);
 		possiblePointsForDot[bestPointIndex].isOccupied = true;
 		return possiblePointsForDot[bestPointIndex];
+	}
+
+	private getColorBySectorName(sectorName: string): string {
+		const sectors: Sector[] = this.model.sectors$.getValue();
+		const sectorWithTheName: Sector = sectors.find((sector: Sector) => sectorName === sector.name);
+		return sectorWithTheName.color;
 	}
 }

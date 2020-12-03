@@ -7,6 +7,7 @@ import { combineLatest } from 'rxjs/internal/observable/combineLatest';
 import { LabelsRenderer } from './labels/labels.renderer';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { select } from 'd3';
+import { Sector } from '../../models/sector';
 
 export class DividersRenderer {
 	private labelsRenderer: LabelsRenderer;
@@ -21,26 +22,26 @@ export class DividersRenderer {
 	}
 
 	private initBehavior(): void {
-		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectorNames$, this.model.ringNames$]).subscribe(
-			([rangeX, rangeY, config, sectorNames, ringNames]: [number, number, RadarChartConfig, string[], string[]]) => {
+		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectors$, this.model.ringNames$]).subscribe(
+			([rangeX, rangeY, config, sectors, ringNames]: [number, number, RadarChartConfig, Sector[], string[]]) => {
 				const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
-				const dividers: Divider[] = this.createDividerModels(sectorNames);
+				const dividers: Divider[] = this.createDividerModels(sectors);
 				this.render(outerRingRadius, dividers, ringNames);
 			}
 		);
 	}
 
-	private createDividerModels(sectorNames: string[]): Divider[] {
+	private createDividerModels(sectors: Sector[]): Divider[] {
 		const startDegree: number = 270;
-		const dividers: Divider[] = this.initDividers(startDegree, sectorNames);
+		const dividers: Divider[] = this.initDividers(startDegree, sectors);
 		this.setLabeledDivider(dividers);
 		return dividers;
 	}
 
-	private initDividers(startDegree: number, sectorNames: string[]): Divider[] {
-		const deltaDegree: number = 360 / sectorNames.length;
+	private initDividers(startDegree: number, sectors: Sector[]): Divider[] {
+		const deltaDegree: number = 360 / sectors.length;
 		let currentDegree: number = startDegree - deltaDegree;
-		return sectorNames.map(() => {
+		return sectors.map(() => {
 			return {
 				isLabeled: false,
 				rotation: currentDegree += deltaDegree,
