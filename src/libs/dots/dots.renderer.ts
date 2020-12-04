@@ -34,14 +34,16 @@ export class DotsRenderer {
 			this.config$,
 			this.model.sectors$,
 			this.model.ringNames$,
+			this.model.dots$,
 			this.model.hoveredDot$,
 		]).subscribe(
-			([rangeX, rangeY, config, sectors, ringNames, hoveredDot]: [
+			([rangeX, rangeY, config, sectors, ringNames, dots, hoveredDot]: [
 				number,
 				number,
 				RadarChartConfig,
 				Sector[],
 				string[],
+				RadarDot[],
 				PositionedDot
 			]) => {
 				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.getPossiblePoints(
