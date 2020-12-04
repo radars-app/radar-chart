@@ -7,6 +7,7 @@ import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
 import { select } from 'd3';
 import { Sector } from '../../models/sector';
+import { PositionedDot } from '../../models/positioned-dot';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -27,8 +28,22 @@ export class DotsRenderer {
 	}
 
 	private initBehavior(): void {
-		combineLatest([this.model.rangeX$, this.model.rangeY$, this.config$, this.model.sectors$, this.model.ringNames$]).subscribe(
-			([rangeX, rangeY, config, sectors, ringNames]: [number, number, RadarChartConfig, Sector[], string[]]) => {
+		combineLatest([
+			this.model.rangeX$,
+			this.model.rangeY$,
+			this.config$,
+			this.model.sectors$,
+			this.model.ringNames$,
+			this.model.hoveredDot$,
+		]).subscribe(
+			([rangeX, rangeY, config, sectors, ringNames, hoveredDot]: [
+				number,
+				number,
+				RadarChartConfig,
+				Sector[],
+				string[],
+				PositionedDot
+			]) => {
 				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.getPossiblePoints(
 					this.dotsContainer,
 					this.model
@@ -58,7 +73,9 @@ export class DotsRenderer {
 		const self: DotsRenderer = this;
 		dots.each(function (dot: RadarDot): void {
 			const container: D3Selection = select(this);
-			container.classed('dot', true);
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.renderDotContainer(container, dot, point);
+			self.positionDot(container, point);
 
 			const circle: D3Selection = container.append('circle');
 			const dotColor: string = self.getColorBySectorName(dot.sector);
@@ -66,9 +83,6 @@ export class DotsRenderer {
 
 			const number: D3Selection = container.append('text');
 			self.renderNumber(number, dot.number);
-
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.positionDot(container, point);
 		});
 	}
 
@@ -76,7 +90,10 @@ export class DotsRenderer {
 		const self: DotsRenderer = this;
 		dots.each(function (dot: RadarDot): void {
 			const container: D3Selection = select(this);
-			container.classed('dot', true);
+
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.renderDotContainer(container, dot, point);
+			self.positionDot(container, point);
 
 			const circle: D3Selection = container.select('circle.dot__circle');
 			const dotColor: string = self.getColorBySectorName(dot.sector);
@@ -84,14 +101,40 @@ export class DotsRenderer {
 
 			const number: D3Selection = container.select('text.dot__number');
 			self.renderNumber(number, dot.number);
-
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.positionDot(container, point);
 		});
 	}
 
 	private exit(dots: D3Selection): void {
 		dots.remove();
+	}
+
+	private renderDotContainer(container: D3Selection, dot: RadarDot, point: PossiblePoint): void {
+		const self: DotsRenderer = this;
+		container
+			.classed('dot', true)
+			.on('mouseover', function (): void {
+				const positionedDot: PositionedDot = {
+					radarDot: dot,
+					x: point.x,
+					y: point.y,
+				};
+				self.model.hoveredDot$.next(positionedDot);
+			})
+			.on('mouseout', function (): void {
+				self.model.hoveredDot$.next(null);
+			})
+			.transition()
+			.duration(300)
+			.attr('fill-opacity', function (): number {
+				const hoveredDot: PositionedDot = self.model.hoveredDot$.getValue();
+				let opacity: number;
+				if (hoveredDot === null) {
+					opacity = 0.8;
+				} else {
+					opacity = hoveredDot.radarDot === dot ? 1 : 0.6;
+				}
+				return opacity;
+			});
 	}
 
 	private renderCircle(container: D3Selection, color: string): void {
@@ -101,7 +144,7 @@ export class DotsRenderer {
 	private renderNumber(container: D3Selection, number: number): void {
 		container
 			.classed('dot__number', true)
-			.attr('fill', 'white')
+			.attr('fill', this.config.backgroundColor)
 			.attr('font-family', this.config.dotsConfig.numberFontFamily)
 			.attr('font-size', this.config.dotsConfig.numberFontSize)
 			.attr('dominant-baseline', 'central')
