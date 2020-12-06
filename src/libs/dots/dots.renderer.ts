@@ -35,24 +35,20 @@ export class DotsRenderer {
 			this.model.sectors$,
 			this.model.ringNames$,
 			this.model.dots$,
-			this.model.hoveredDot$,
 		]).subscribe(
-			([rangeX, rangeY, config, sectors, ringNames, dots, hoveredDot]: [
-				number,
-				number,
-				RadarChartConfig,
-				Sector[],
-				string[],
-				RadarDot[],
-				PositionedDot
-			]) => {
-				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.getPossiblePoints(
-					this.dotsContainer,
-					this.model
-				);
+			([rangeX, rangeY, config, sectors, ringNames, dots]: [number, number, RadarChartConfig, Sector[], string[], RadarDot[]]) => {
+				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
 				this.render(this.container, possiblePoints);
 			}
 		);
+
+		this.model.hoveredDot$.subscribe(() => {
+			const cachedPoints: Map<string, PossiblePoint[]> = this.possiblePointsService.cachedPossiblePoints;
+			const possiblePoints: Map<string, PossiblePoint[]> = cachedPoints
+				? cachedPoints
+				: this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
+			this.render(this.container, possiblePoints);
+		});
 	}
 
 	private initContainers(): void {
@@ -146,7 +142,7 @@ export class DotsRenderer {
 	private renderNumber(container: D3Selection, number: number): void {
 		container
 			.classed('dot__number', true)
-			.attr('fill', this.config.backgroundColor)
+			.attr('fill', '#FFFFFF')
 			.attr('font-family', this.config.dotsConfig.numberFontFamily)
 			.attr('font-size', this.config.dotsConfig.numberFontSize)
 			.attr('dominant-baseline', 'central')
@@ -166,24 +162,36 @@ export class DotsRenderer {
 			return point.isEdgePoint || point.isOccupied;
 		});
 
-		const lengthDiffs: number[] = possiblePointsForDot.map((possiblePoint: PossiblePoint) => {
-			const lengthsBetween: number[] = pointsToAvoid.map((pointToAvoid: PossiblePoint) => {
+		let candidatePoint: PossiblePoint = null;
+		let candidateDistance: number = 0;
+		possiblePointsForDot.forEach((possiblePoint: PossiblePoint, index: number) => {
+			let currentDistance: number = 300;
+			pointsToAvoid.forEach((pointToAvoid: PossiblePoint) => {
 				const diffX: number = pointToAvoid.x - possiblePoint.x;
 				const diffY: number = pointToAvoid.y - possiblePoint.y;
-				const lengthBetween: number = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
-				return lengthBetween;
+				const lengthBetween: number = Math.sqrt(diffX ** 2 + diffY ** 2);
+				if (lengthBetween < currentDistance) {
+					currentDistance = lengthBetween;
+				}
 			});
 
-			const lengthDifference: number = lengthsBetween.reduce((sum: number, length: number) => {
-				return sum + Math.abs(length - lengthsBetween[0]);
-			}, 0);
-			return lengthDifference;
+			if (currentDistance > candidateDistance) {
+				candidatePoint = possiblePointsForDot[index];
+				candidateDistance = currentDistance;
+			}
 		});
 
-		const maxLength: number = Math.min(...lengthDiffs);
-		const bestPointIndex: number = lengthDiffs.findIndex((length: number) => length === maxLength);
-		possiblePointsForDot[bestPointIndex].isOccupied = true;
-		return possiblePointsForDot[bestPointIndex];
+		if (candidatePoint === null) {
+			candidatePoint = possiblePointsForDot[0];
+		}
+
+		if (candidatePoint === undefined) {
+			console.log('TODO: implement clusters');
+		} else {
+			candidatePoint.isOccupied = true;
+		}
+
+		return candidatePoint;
 	}
 
 	private getColorBySectorName(sectorName: string): string {

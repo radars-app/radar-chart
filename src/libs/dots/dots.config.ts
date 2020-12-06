@@ -10,7 +10,7 @@ export class DotsConfig {
 	}
 
 	constructor() {
-		this.dotOffset = 6;
+		this.dotOffset = 3;
 		this.dotRadius = 7;
 		this.numberFontFamily = 'Roboto, sans-serif';
 		this.numberFontSize = 7;
