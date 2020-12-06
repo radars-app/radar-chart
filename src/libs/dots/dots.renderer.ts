@@ -43,10 +43,8 @@ export class DotsRenderer {
 		);
 
 		this.model.hoveredDot$.subscribe(() => {
-			const cachedPoints: Map<string, PossiblePoint[]> = this.possiblePointsService.cachedPossiblePoints;
-			const possiblePoints: Map<string, PossiblePoint[]> = cachedPoints
-				? cachedPoints
-				: this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
+			const possiblePoints: Map<string, PossiblePoint[]> =
+				this.possiblePointsService.cachedPossiblePoints || this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
 			this.render(this.container, possiblePoints);
 		});
 	}
@@ -186,11 +184,10 @@ export class DotsRenderer {
 		}
 
 		if (candidatePoint === undefined) {
-			console.log('TODO: implement clusters');
-		} else {
-			candidatePoint.isOccupied = true;
+			throw new Error('implement clusters');
 		}
 
+		candidatePoint.isOccupied = true;
 		return candidatePoint;
 	}
 

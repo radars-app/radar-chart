@@ -12,15 +12,9 @@ import { D3ZoomBehavior } from '../../models/types/d3-zoom-behavior';
 
 export class RadarChartRenderer {
 	private container: D3Selection;
-	private scale: number;
 
-	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
-
-	private dividersRenderer: DividersRenderer;
 	private dividersContainer: D3Selection;
-
-	private dotsRenderer: DotsRenderer;
 	private dotsContainer: D3Selection;
 
 	constructor(
@@ -30,7 +24,6 @@ export class RadarChartRenderer {
 		private size$: BehaviorSubject<Size>
 	) {
 		this.initContainers();
-		this.initBehavior();
 	}
 
 	private get config(): RadarChartConfig {
@@ -42,11 +35,13 @@ export class RadarChartRenderer {
 	}
 
 	public start(): void {
-		this.ringsRenderer = new RingsRenderer(this.ringsContainer, this.model, this.config$);
+		const ringsRenderer: RingsRenderer = new RingsRenderer(this.ringsContainer, this.model, this.config$);
 
-		this.dividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
+		const dividersRenderer: DividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
 
-		this.dotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
+		const dotsRenderer: DotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
+
+		this.initBehavior();
 	}
 
 	private initBehavior(): void {
@@ -60,10 +55,13 @@ export class RadarChartRenderer {
 			zoomContainer.attr('transform', event.transform.toString());
 		});
 
-		this.container.call(zoomBehavior);
+		const initialScale: number = this.calculateInitialScale();
+		const initialTransformX: number = this.config.offsetLeft + this.config.marginLeftRight;
+		const initialTransformY: number = this.config.marginTopBottom;
+		zoomBehavior.scaleBy(this.container, initialScale, [0, 0]);
+		zoomBehavior.translateBy(this.container, initialTransformX, initialTransformY);
 
-		this.scale = this.calculateInitialScale();
-		zoomBehavior.scaleBy(this.container, this.scale, [0, 0]);
+		this.container.call(zoomBehavior);
 	}
 
 	private calculateInitialScale(): number {
@@ -71,7 +69,7 @@ export class RadarChartRenderer {
 	}
 
 	private initContainers(): void {
-		this.container = select(this.svgElement).append('g').attr('class', 'radar-chart__container');
+		this.container = select(this.svgElement);
 
 		const zoomContainer: D3Selection = this.container.append('g').attr('class', 'radar-chart__zoom-container');
 
@@ -89,10 +87,5 @@ export class RadarChartRenderer {
 			.style('background', this.config.backgroundColor)
 			.attr('width', this.size.width)
 			.attr('height', this.size.height);
-
-		this.container.attr(
-			'transform',
-			`translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`
-		);
 	}
 }
