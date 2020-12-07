@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { DotHoveredEvent } from '../../models/dot-hovered-event';
 import { RadarDot } from '../../models/radar-dot';
@@ -13,6 +14,9 @@ export class RadarChartModel {
 
 	public readonly hoveredDot$: BehaviorSubject<DotHoveredEvent>;
 
+	public readonly zoomIn$: Subject<true>;
+	public readonly zoomOut$: Subject<false>;
+
 	constructor() {
 		this.rangeX$ = new BehaviorSubject(1366);
 		this.rangeY$ = new BehaviorSubject(662);
@@ -20,5 +24,15 @@ export class RadarChartModel {
 		this.ringNames$ = new BehaviorSubject([]);
 		this.dots$ = new BehaviorSubject([]);
 		this.hoveredDot$ = new BehaviorSubject(null);
+		this.zoomIn$ = new Subject();
+		this.zoomOut$ = new Subject();
+	}
+
+	public zoomIn(): void {
+		this.zoomIn$.next(true);
+	}
+
+	public zoomOut(): void {
+		this.zoomOut$.next(false);
 	}
 }
