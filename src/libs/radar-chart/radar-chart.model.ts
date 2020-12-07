@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { PositionedDot } from '../../models/positioned-dot';
+import { DotHoveredEvent } from '../../models/dot-hovered-event';
 import { RadarDot } from '../../models/radar-dot';
 import { Sector } from '../../models/sector';
 
@@ -11,7 +11,7 @@ export class RadarChartModel {
 	public readonly ringNames$: BehaviorSubject<string[]>;
 	public readonly dots$: BehaviorSubject<RadarDot[]>;
 
-	public readonly hoveredDot$: BehaviorSubject<PositionedDot>;
+	public readonly hoveredDot$: BehaviorSubject<DotHoveredEvent>;
 
 	constructor() {
 		this.rangeX$ = new BehaviorSubject(1366);

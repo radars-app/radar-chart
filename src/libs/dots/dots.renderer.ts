@@ -5,9 +5,9 @@ import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
 import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
-import { select } from 'd3';
+import { easeLinear, select } from 'd3';
 import { Sector } from '../../models/sector';
-import { PositionedDot } from '../../models/positioned-dot';
+import { DotHoveredEvent } from '../../models/dot-hovered-event';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -69,9 +69,7 @@ export class DotsRenderer {
 		const self: DotsRenderer = this;
 		dots.each(function (dot: RadarDot): void {
 			const container: D3Selection = select(this);
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.renderDotContainer(container, dot, point);
-			self.positionDot(container, point);
+			self.renderDotContainer(container);
 
 			const circle: D3Selection = container.append('circle');
 			const dotColor: string = self.getColorBySectorName(dot.sector);
@@ -79,6 +77,9 @@ export class DotsRenderer {
 
 			const number: D3Selection = container.append('text');
 			self.renderNumber(number, dot.number);
+
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.positionDot(container, point);
 		});
 	}
 
@@ -86,10 +87,7 @@ export class DotsRenderer {
 		const self: DotsRenderer = this;
 		dots.each(function (dot: RadarDot): void {
 			const container: D3Selection = select(this);
-
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.renderDotContainer(container, dot, point);
-			self.positionDot(container, point);
+			self.renderDotContainer(container);
 
 			const circle: D3Selection = container.select('circle.dot__circle');
 			const dotColor: string = self.getColorBySectorName(dot.sector);
@@ -97,6 +95,9 @@ export class DotsRenderer {
 
 			const number: D3Selection = container.select('text.dot__number');
 			self.renderNumber(number, dot.number);
+
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.positionDot(container, point);
 		});
 	}
 
@@ -104,15 +105,15 @@ export class DotsRenderer {
 		dots.remove();
 	}
 
-	private renderDotContainer(container: D3Selection, dot: RadarDot, point: PossiblePoint): void {
+	private renderDotContainer(container: D3Selection): void {
 		const self: DotsRenderer = this;
+		const dot: RadarDot = container.datum();
 		container
 			.classed('dot', true)
-			.on('mouseover', function (): void {
-				const positionedDot: PositionedDot = {
-					radarDot: dot,
-					x: point.x,
-					y: point.y,
+			.on('mouseover', function (event: Event): void {
+				const positionedDot: DotHoveredEvent = {
+					dotId: dot.id,
+					target: event.target as SVGGElement,
 				};
 				self.model.hoveredDot$.next(positionedDot);
 			})
@@ -120,14 +121,15 @@ export class DotsRenderer {
 				self.model.hoveredDot$.next(null);
 			})
 			.transition()
-			.duration(300)
+			.duration(200)
+			.ease(easeLinear)
 			.attr('fill-opacity', function (): number {
-				const hoveredDot: PositionedDot = self.model.hoveredDot$.getValue();
+				const hoveredDot: DotHoveredEvent = self.model.hoveredDot$.getValue();
 				let opacity: number;
 				if (hoveredDot === null) {
 					opacity = 0.8;
 				} else {
-					opacity = hoveredDot.radarDot === dot ? 1 : 0.6;
+					opacity = hoveredDot.dotId === dot.id ? 1 : 0.6;
 				}
 				return opacity;
 			});
