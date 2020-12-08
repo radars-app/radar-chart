@@ -5,6 +5,8 @@ export class DotsConfig {
 	public numberFontSize: number;
 	public numberFontFamily: string;
 
+	public hoveredDotClassName: string = 'dot--hovered';
+
 	public get dotDiameterWithOffsets(): number {
 		return 2 * this.dotOffset + 2 * this.dotRadius;
 	}

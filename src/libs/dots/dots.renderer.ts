@@ -7,7 +7,6 @@ import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
 import { easeLinear, select } from 'd3';
 import { Sector } from '../../models/sector';
-import { DotHoveredEvent } from '../../models/dot-hovered-event';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -42,7 +41,7 @@ export class DotsRenderer {
 			}
 		);
 
-		this.model.hoveredDot$.subscribe(() => {
+		this.model.hoveredDotId$.subscribe(() => {
 			const possiblePoints: Map<string, PossiblePoint[]> =
 				this.possiblePointsService.cachedPossiblePoints || this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
 			this.render(this.container, possiblePoints);
@@ -107,29 +106,28 @@ export class DotsRenderer {
 
 	private renderDotContainer(container: D3Selection): void {
 		const self: DotsRenderer = this;
+		const hoveredDotId: string = this.model.hoveredDotId$.getValue();
 		const dot: RadarDot = container.datum();
 		container
 			.classed('dot', true)
-			.on('mouseover', function (event: Event): void {
-				const positionedDot: DotHoveredEvent = {
-					dotId: dot.id,
-					target: event.target as SVGGElement,
-				};
-				self.model.hoveredDot$.next(positionedDot);
+			.classed('dot--hovered', function (): boolean {
+				return hoveredDotId === dot.id;
+			})
+			.on('mouseover', function (): void {
+				self.model.hoveredDotId$.next(dot.id);
 			})
 			.on('mouseout', function (): void {
-				self.model.hoveredDot$.next(null);
+				self.model.hoveredDotId$.next(undefined);
 			})
 			.transition()
 			.duration(200)
 			.ease(easeLinear)
 			.attr('fill-opacity', function (): number {
-				const hoveredDot: DotHoveredEvent = self.model.hoveredDot$.getValue();
 				let opacity: number;
-				if (hoveredDot === null) {
+				if (hoveredDotId === undefined) {
 					opacity = 0.8;
 				} else {
-					opacity = hoveredDot.dotId === dot.id ? 1 : 0.6;
+					opacity = hoveredDotId === dot.id ? 1 : 0.6;
 				}
 				return opacity;
 			});
