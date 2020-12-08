@@ -13,9 +13,15 @@ import { D3ZoomBehavior } from '../../models/types/d3-zoom-behavior';
 export class RadarChartRenderer {
 	private container: D3Selection;
 
+	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
+
+	private dividersRenderer: DividersRenderer;
 	private dividersContainer: D3Selection;
+
+	private dotsRenderer: DotsRenderer;
 	private dotsContainer: D3Selection;
+
 	private zoomContainer: D3Selection;
 
 	private scale: number;
@@ -38,11 +44,11 @@ export class RadarChartRenderer {
 	}
 
 	public start(): void {
-		const ringsRenderer: RingsRenderer = new RingsRenderer(this.ringsContainer, this.model, this.config$);
+		this.ringsRenderer = new RingsRenderer(this.ringsContainer, this.model, this.config$);
 
-		const dividersRenderer: DividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
+		this.dividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
 
-		const dotsRenderer: DotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
+		this.dotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
 
 		this.initBehavior();
 	}
@@ -60,6 +66,7 @@ export class RadarChartRenderer {
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
 			self.zoomContainer.attr('transform', event.transform.toString());
 			self.scale = event.transform.k;
+			self.dotsRenderer.reemitDotHoverEvent();
 		});
 
 		this.scale = this.calculateInitialScale();

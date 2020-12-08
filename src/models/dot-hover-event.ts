@@ -1,4 +1,4 @@
-export interface DotHoveredEvent {
+export interface DotHoverEvent {
 	dotId: string;
 	element: SVGGElement;
 }
