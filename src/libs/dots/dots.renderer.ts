@@ -7,6 +7,7 @@ import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
 import { easeLinear, select } from 'd3';
 import { Sector } from '../../models/sector';
+import { DotHoveredEvent } from '../../models/dot-hovered-event';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -41,7 +42,7 @@ export class DotsRenderer {
 			}
 		);
 
-		this.model.hoveredDotId$.subscribe(() => {
+		this.model.dotHoveredEvent$.subscribe(() => {
 			const possiblePoints: Map<string, PossiblePoint[]> =
 				this.possiblePointsService.cachedPossiblePoints || this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
 			this.render(this.container, possiblePoints);
@@ -106,28 +107,28 @@ export class DotsRenderer {
 
 	private renderDotContainer(container: D3Selection): void {
 		const self: DotsRenderer = this;
-		const hoveredDotId: string = this.model.hoveredDotId$.getValue();
 		const dot: RadarDot = container.datum();
 		container
 			.classed('dot', true)
-			.classed('dot--hovered', function (): boolean {
-				return hoveredDotId === dot.id;
-			})
 			.on('mouseover', function (): void {
-				self.model.hoveredDotId$.next(dot.id);
+				self.model.dotHoveredEvent$.next({
+					dotId: dot.id,
+					element: this,
+				});
 			})
 			.on('mouseout', function (): void {
-				self.model.hoveredDotId$.next(undefined);
+				self.model.dotHoveredEvent$.next(null);
 			})
 			.transition()
 			.duration(200)
 			.ease(easeLinear)
 			.attr('fill-opacity', function (): number {
+				const dotHoveredEvent: DotHoveredEvent = self.model.dotHoveredEvent$.getValue();
 				let opacity: number;
-				if (hoveredDotId === undefined) {
+				if (dotHoveredEvent === null) {
 					opacity = 0.8;
 				} else {
-					opacity = hoveredDotId === dot.id ? 1 : 0.6;
+					opacity = dotHoveredEvent.dotId === dot.id ? 1 : 0.6;
 				}
 				return opacity;
 			});
