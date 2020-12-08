@@ -27,10 +27,6 @@ export class DotsRenderer {
 		this.initBehavior();
 	}
 
-	public reemitDotHoverEvent(): void {
-		this.model.dotHoverEvent$.next(this.model.dotHoverEvent$.getValue());
-	}
-
 	private initBehavior(): void {
 		combineLatest([
 			this.model.rangeX$,
@@ -46,7 +42,7 @@ export class DotsRenderer {
 			}
 		);
 
-		this.model.dotHoverEvent$.subscribe(() => {
+		combineLatest([this.model.dotMouseOver$, this.model.dotMouseOut$]).subscribe(() => {
 			const possiblePoints: Map<string, PossiblePoint[]> =
 				this.possiblePointsService.cachedPossiblePoints || this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
 			this.render(this.container, possiblePoints);
@@ -115,24 +111,29 @@ export class DotsRenderer {
 		container
 			.classed('dot', true)
 			.on('mouseover', function (): void {
-				self.model.dotHoverEvent$.next({
+				self.model.dotMouseOver$.next({
 					dotId: dot.id,
 					element: this,
 				});
+				self.model.dotMouseOut$.next(self.model._initialDotHoverEvent);
 			})
 			.on('mouseout', function (): void {
-				self.model.dotHoverEvent$.next(null);
+				self.model.dotMouseOut$.next({
+					dotId: dot.id,
+					element: this,
+				});
+				self.model.dotMouseOver$.next(self.model._initialDotHoverEvent);
 			})
 			.transition()
 			.duration(200)
 			.ease(easeLinear)
 			.attr('fill-opacity', function (): number {
-				const dotHoveredEvent: DotHoverEvent = self.model.dotHoverEvent$.getValue();
+				const dotMouseOverEvent: DotHoverEvent = self.model.dotMouseOver$.getValue();
 				let opacity: number;
-				if (dotHoveredEvent === null) {
+				if (dotMouseOverEvent.dotId === undefined) {
 					opacity = 0.8;
 				} else {
-					opacity = dotHoveredEvent.dotId === dot.id ? 1 : 0.6;
+					opacity = dotMouseOverEvent.dotId === dot.id ? 1 : 0.6;
 				}
 				return opacity;
 			});

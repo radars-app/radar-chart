@@ -12,8 +12,11 @@ export class RadarChartModel {
 	public readonly ringNames$: BehaviorSubject<string[]>;
 	public readonly dots$: BehaviorSubject<RadarDot[]>;
 
-	public readonly dotHoverEvent$: BehaviorSubject<DotHoverEvent>;
+	public readonly _initialDotHoverEvent: DotHoverEvent = { dotId: undefined, element: null };
+	public readonly dotMouseOver$: BehaviorSubject<DotHoverEvent>;
+	public readonly dotMouseOut$: BehaviorSubject<DotHoverEvent>;
 
+	public readonly zoomEmitted$: Subject<true>;
 	public readonly zoomIn$: Subject<true>;
 	public readonly zoomOut$: Subject<false>;
 
@@ -23,7 +26,9 @@ export class RadarChartModel {
 		this.sectors$ = new BehaviorSubject([]);
 		this.ringNames$ = new BehaviorSubject([]);
 		this.dots$ = new BehaviorSubject([]);
-		this.dotHoverEvent$ = new BehaviorSubject(null);
+		this.dotMouseOver$ = new BehaviorSubject(this._initialDotHoverEvent);
+		this.dotMouseOut$ = new BehaviorSubject(this._initialDotHoverEvent);
+		this.zoomEmitted$ = new Subject();
 		this.zoomIn$ = new Subject();
 		this.zoomOut$ = new Subject();
 	}
