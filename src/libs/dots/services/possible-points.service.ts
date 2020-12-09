@@ -14,22 +14,41 @@ export class PossiblePointsService {
 		this.tracksService = new TracksService(config$);
 	}
 
-	public getPossiblePoints(container: D3Selection, model: RadarChartModel): Map<string, PossiblePoint[]> {
-		const rangeX: number = model.rangeX$.getValue();
-		const rangeY: number = model.rangeY$.getValue();
-		const ringNames: string[] = model.ringNames$.getValue();
+	public get cachedPossiblePoints(): Map<string, PossiblePoint[]> {
+		return this.copyPossiblePoints(this.possiblePoints);
+	}
+
+	public calculatePossiblePoints(container: D3Selection): Map<string, PossiblePoint[]> {
+		const trackElements: SVGPathElement[] = this.calculateTrackPaths(container);
+		this.possiblePoints = this.calculatePossiblePointsByTracks(trackElements);
+		this.tracksService.clearTracks(container);
+		return this.copyPossiblePoints(this.possiblePoints);
+	}
+
+	private copyPossiblePoints(possiblePoints: Map<string, PossiblePoint[]>): Map<string, PossiblePoint[]> {
+		const copiedPoints: Map<string, PossiblePoint[]> = new Map();
+		possiblePoints.forEach((sectorPoints: PossiblePoint[], key: string) => {
+			const cachedSectorPoints: PossiblePoint[] = sectorPoints.map((point: PossiblePoint) => {
+				return { ...point };
+			});
+			copiedPoints.set(key, cachedSectorPoints);
+		});
+		return copiedPoints;
+	}
+
+	private calculateTrackPaths(container: D3Selection): SVGPathElement[] {
+		const rangeX: number = this.model.rangeX$.getValue();
+		const rangeY: number = this.model.rangeY$.getValue();
+		const ringNames: string[] = this.model.ringNames$.getValue();
 		const config: RadarChartConfig = this.config$.getValue();
 
 		const outerRingRadius: number = calculateOuterRingRadius(rangeX, rangeY, config);
 		this.tracksService.renderTracks(container, outerRingRadius, ringNames);
 		const tracks: D3Selection = container.selectAll('path.track');
-		const trackElements: SVGPathElement[] = tracks.nodes();
-		this.possiblePoints = this.calculatePossiblePoints(trackElements);
-		this.tracksService.clearTracks(container);
-		return this.possiblePoints;
+		return tracks.nodes();
 	}
 
-	private calculatePossiblePoints(trackElements: SVGPathElement[]): Map<string, PossiblePoint[]> {
+	private calculatePossiblePointsByTracks(trackElements: SVGPathElement[]): Map<string, PossiblePoint[]> {
 		const possiblePoints: Map<string, PossiblePoint[]> = new Map();
 		const ringNames: string[] = this.model.ringNames$.getValue();
 		const sectors: Sector[] = this.model.sectors$.getValue();
@@ -88,7 +107,7 @@ export class PossiblePointsService {
 			const possiblePoint: PossiblePoint = {
 				x: point.x,
 				y: point.y,
-				isEdgePoint: isEdgeTrack && (isEdgePoint || isCenterPont),
+				isEdgePoint: isEdgeTrack && isEdgePoint,
 			};
 			return possiblePoint;
 		});

@@ -2,7 +2,7 @@ import { D3Selection } from '../../models/types/d3-selection';
 import { RadarChartConfig } from './radar-chart.config';
 import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
-import { BehaviorSubject, combineLatest } from 'rxjs';
+import { BehaviorSubject, combineLatest, merge } from 'rxjs';
 import { Size } from '../../models/size';
 import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
@@ -12,7 +12,6 @@ import { D3ZoomBehavior } from '../../models/types/d3-zoom-behavior';
 
 export class RadarChartRenderer {
 	private container: D3Selection;
-	private scale: number;
 
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
@@ -23,6 +22,10 @@ export class RadarChartRenderer {
 	private dotsRenderer: DotsRenderer;
 	private dotsContainer: D3Selection;
 
+	private zoomContainer: D3Selection;
+
+	private scale: number;
+
 	constructor(
 		private svgElement: SVGElement,
 		private model: RadarChartModel,
@@ -30,7 +33,6 @@ export class RadarChartRenderer {
 		private size$: BehaviorSubject<Size>
 	) {
 		this.initContainers();
-		this.initBehavior();
 	}
 
 	private get config(): RadarChartConfig {
@@ -47,23 +49,40 @@ export class RadarChartRenderer {
 		this.dividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
 
 		this.dotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
+
+		this.initBehavior();
 	}
 
 	private initBehavior(): void {
+		this.initZoomBehavior();
+
 		combineLatest([this.config$, this.size$]).subscribe(() => {
 			this.render();
 		});
 	}
 
-	private initZoomBehavior(zoomContainer: D3Selection): void {
+	private initZoomBehavior(): void {
+		const self: RadarChartRenderer = this;
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
-			zoomContainer.attr('transform', event.transform.toString());
+			self.zoomContainer.attr('transform', event.transform.toString());
+			self.scale = event.transform.k;
+			self.model.zoomEmitted$.next(true);
+		});
+
+		this.scale = this.calculateInitialScale();
+		const initialTransformX: number = this.config.offsetLeft + this.config.marginLeftRight;
+		const initialTransformY: number = this.config.marginTopBottom;
+		zoomBehavior.scaleTo(this.container, this.scale, [0, 0]);
+		zoomBehavior.translateBy(this.container, initialTransformX, initialTransformY);
+
+		const scalePointX: number = this.size.width / 2;
+		const scalePointY: number = this.size.height / 2;
+		merge(this.model.zoomIn$, this.model.zoomOut$).subscribe((isZoomIn: boolean) => {
+			this.scale = isZoomIn ? 2 * this.scale : this.scale / 2;
+			this.container.transition().duration(300).call(zoomBehavior.scaleTo, this.scale, [scalePointX, scalePointY]);
 		});
 
 		this.container.call(zoomBehavior);
-
-		this.scale = this.calculateInitialScale();
-		zoomBehavior.scaleBy(this.container, this.scale, [0, 0]);
 	}
 
 	private calculateInitialScale(): number {
@@ -71,17 +90,15 @@ export class RadarChartRenderer {
 	}
 
 	private initContainers(): void {
-		this.container = select(this.svgElement).append('g').attr('class', 'radar-chart__container');
+		this.container = select(this.svgElement);
 
-		const zoomContainer: D3Selection = this.container.append('g').attr('class', 'radar-chart__zoom-container');
+		this.zoomContainer = this.container.append('g').attr('class', 'radar-chart__zoom-container');
 
-		this.initZoomBehavior(zoomContainer);
+		this.ringsContainer = this.zoomContainer.append('g').attr('class', 'radar-chart__rings');
 
-		this.ringsContainer = zoomContainer.append('g').attr('class', 'radar-chart__rings');
+		this.dividersContainer = this.zoomContainer.append('g').attr('class', 'radar-chart__dividers');
 
-		this.dividersContainer = zoomContainer.append('g').attr('class', 'radar-chart__dividers');
-
-		this.dotsContainer = zoomContainer.append('g').attr('class', 'radar-chart__dots');
+		this.dotsContainer = this.zoomContainer.append('g').attr('class', 'radar-chart__dots');
 	}
 
 	private render(): void {
@@ -89,10 +106,5 @@ export class RadarChartRenderer {
 			.style('background', this.config.backgroundColor)
 			.attr('width', this.size.width)
 			.attr('height', this.size.height);
-
-		this.container.attr(
-			'transform',
-			`translate(${this.config.offsetLeft + this.config.marginLeftRight}, ${this.config.marginTopBottom})`
-		);
 	}
 }

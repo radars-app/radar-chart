@@ -5,9 +5,9 @@ import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
 import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
-import { select } from 'd3';
+import { easeLinear, select } from 'd3';
 import { Sector } from '../../models/sector';
-import { PositionedDot } from '../../models/positioned-dot';
+import { DotHoverEvent } from '../../models/dot-hover-event';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -35,24 +35,18 @@ export class DotsRenderer {
 			this.model.sectors$,
 			this.model.ringNames$,
 			this.model.dots$,
-			this.model.hoveredDot$,
 		]).subscribe(
-			([rangeX, rangeY, config, sectors, ringNames, dots, hoveredDot]: [
-				number,
-				number,
-				RadarChartConfig,
-				Sector[],
-				string[],
-				RadarDot[],
-				PositionedDot
-			]) => {
-				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.getPossiblePoints(
-					this.dotsContainer,
-					this.model
-				);
+			([rangeX, rangeY, config, sectors, ringNames, dots]: [number, number, RadarChartConfig, Sector[], string[], RadarDot[]]) => {
+				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
 				this.render(this.container, possiblePoints);
 			}
 		);
+
+		combineLatest([this.model.dotMouseOver$, this.model.dotMouseOut$]).subscribe(() => {
+			const possiblePoints: Map<string, PossiblePoint[]> =
+				this.possiblePointsService.cachedPossiblePoints || this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
+			this.render(this.container, possiblePoints);
+		});
 	}
 
 	private initContainers(): void {
@@ -75,9 +69,7 @@ export class DotsRenderer {
 		const self: DotsRenderer = this;
 		dots.each(function (dot: RadarDot): void {
 			const container: D3Selection = select(this);
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.renderDotContainer(container, dot, point);
-			self.positionDot(container, point);
+			self.renderDotContainer(container);
 
 			const circle: D3Selection = container.append('circle');
 			const dotColor: string = self.getColorBySectorName(dot.sector);
@@ -85,6 +77,9 @@ export class DotsRenderer {
 
 			const number: D3Selection = container.append('text');
 			self.renderNumber(number, dot.number);
+
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.positionDot(container, point);
 		});
 	}
 
@@ -92,10 +87,7 @@ export class DotsRenderer {
 		const self: DotsRenderer = this;
 		dots.each(function (dot: RadarDot): void {
 			const container: D3Selection = select(this);
-
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.renderDotContainer(container, dot, point);
-			self.positionDot(container, point);
+			self.renderDotContainer(container);
 
 			const circle: D3Selection = container.select('circle.dot__circle');
 			const dotColor: string = self.getColorBySectorName(dot.sector);
@@ -103,6 +95,9 @@ export class DotsRenderer {
 
 			const number: D3Selection = container.select('text.dot__number');
 			self.renderNumber(number, dot.number);
+
+			const point: PossiblePoint = self.choosePoint(dot, points);
+			self.positionDot(container, point);
 		});
 	}
 
@@ -110,30 +105,35 @@ export class DotsRenderer {
 		dots.remove();
 	}
 
-	private renderDotContainer(container: D3Selection, dot: RadarDot, point: PossiblePoint): void {
+	private renderDotContainer(container: D3Selection): void {
 		const self: DotsRenderer = this;
+		const dot: RadarDot = container.datum();
 		container
 			.classed('dot', true)
 			.on('mouseover', function (): void {
-				const positionedDot: PositionedDot = {
-					radarDot: dot,
-					x: point.x,
-					y: point.y,
-				};
-				self.model.hoveredDot$.next(positionedDot);
+				self.model.dotMouseOver$.next({
+					dotId: dot.id,
+					element: this,
+				});
+				self.model.dotMouseOut$.next(self.model._initialDotHoverEvent);
 			})
 			.on('mouseout', function (): void {
-				self.model.hoveredDot$.next(null);
+				self.model.dotMouseOut$.next({
+					dotId: dot.id,
+					element: this,
+				});
+				self.model.dotMouseOver$.next(self.model._initialDotHoverEvent);
 			})
 			.transition()
-			.duration(300)
+			.duration(200)
+			.ease(easeLinear)
 			.attr('fill-opacity', function (): number {
-				const hoveredDot: PositionedDot = self.model.hoveredDot$.getValue();
+				const dotMouseOverEvent: DotHoverEvent = self.model.dotMouseOver$.getValue();
 				let opacity: number;
-				if (hoveredDot === null) {
+				if (dotMouseOverEvent.dotId === undefined) {
 					opacity = 0.8;
 				} else {
-					opacity = hoveredDot.radarDot === dot ? 1 : 0.6;
+					opacity = dotMouseOverEvent.dotId === dot.id ? 1 : 0.6;
 				}
 				return opacity;
 			});
@@ -146,7 +146,7 @@ export class DotsRenderer {
 	private renderNumber(container: D3Selection, number: number): void {
 		container
 			.classed('dot__number', true)
-			.attr('fill', this.config.backgroundColor)
+			.attr('fill', '#FFFFFF')
 			.attr('font-family', this.config.dotsConfig.numberFontFamily)
 			.attr('font-size', this.config.dotsConfig.numberFontSize)
 			.attr('dominant-baseline', 'central')
@@ -166,24 +166,35 @@ export class DotsRenderer {
 			return point.isEdgePoint || point.isOccupied;
 		});
 
-		const lengthDiffs: number[] = possiblePointsForDot.map((possiblePoint: PossiblePoint) => {
-			const lengthsBetween: number[] = pointsToAvoid.map((pointToAvoid: PossiblePoint) => {
+		let candidatePoint: PossiblePoint = null;
+		let candidateDistance: number = 0;
+		possiblePointsForDot.forEach((possiblePoint: PossiblePoint, index: number) => {
+			let currentDistance: number = 300;
+			pointsToAvoid.forEach((pointToAvoid: PossiblePoint) => {
 				const diffX: number = pointToAvoid.x - possiblePoint.x;
 				const diffY: number = pointToAvoid.y - possiblePoint.y;
-				const lengthBetween: number = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
-				return lengthBetween;
+				const lengthBetween: number = Math.sqrt(diffX ** 2 + diffY ** 2);
+				if (lengthBetween < currentDistance) {
+					currentDistance = lengthBetween;
+				}
 			});
 
-			const lengthDifference: number = lengthsBetween.reduce((sum: number, length: number) => {
-				return sum + Math.abs(length - lengthsBetween[0]);
-			}, 0);
-			return lengthDifference;
+			if (currentDistance > candidateDistance) {
+				candidatePoint = possiblePointsForDot[index];
+				candidateDistance = currentDistance;
+			}
 		});
 
-		const maxLength: number = Math.min(...lengthDiffs);
-		const bestPointIndex: number = lengthDiffs.findIndex((length: number) => length === maxLength);
-		possiblePointsForDot[bestPointIndex].isOccupied = true;
-		return possiblePointsForDot[bestPointIndex];
+		if (candidatePoint === null) {
+			candidatePoint = possiblePointsForDot[0];
+		}
+
+		if (candidatePoint === undefined) {
+			throw new Error('implement clusters');
+		}
+
+		candidatePoint.isOccupied = true;
+		return candidatePoint;
 	}
 
 	private getColorBySectorName(sectorName: string): string {
