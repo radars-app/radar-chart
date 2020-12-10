@@ -110,14 +110,14 @@ export class DotsRenderer {
 		const dot: RadarDot = container.datum();
 		container
 			.classed('dot', true)
-			.on('mouseover', function (): void {
+			.on('mouseover', function (event: Event): void {
 				self.model.dotMouseOver$.next({
 					dotId: dot.id,
 					element: this,
 				});
 				self.model.dotMouseOut$.next(self.model._initialDotHoverEvent);
 			})
-			.on('mouseout', function (): void {
+			.on('mouseout', function (event: Event): void {
 				self.model.dotMouseOut$.next({
 					dotId: dot.id,
 					element: this,
