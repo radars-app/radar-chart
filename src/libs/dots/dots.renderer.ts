@@ -7,8 +7,10 @@ import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
 import { easeLinear, select } from 'd3';
 import { Sector } from '../../models/sector';
-import { DotHoverEvent } from '../../models/dot-hover-event';
+import { DotActionEvent } from '../../models/dot-action-event';
 import { debounceTime } from 'rxjs/operators';
+import { ClickAction } from './actions/click-action';
+import { HoverAction } from './actions/hover-action';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -129,27 +131,17 @@ export class DotsRenderer {
 	private renderDotContainer(container: D3Selection): void {
 		const self: DotsRenderer = this;
 		const dot: RadarDot = container.datum();
+
+		ClickAction.applyTo(container, this.model.dotClick$);
+		HoverAction.applyTo(container, this.model);
+
 		container
 			.classed('dot', true)
-			.on('mouseover', function (event: Event): void {
-				self.model.dotMouseOver$.next({
-					dotId: dot.id,
-					element: this,
-				});
-				self.model.dotMouseOut$.next(self.model._initialDotHoverEvent);
-			})
-			.on('mouseout', function (event: Event): void {
-				self.model.dotMouseOut$.next({
-					dotId: dot.id,
-					element: this,
-				});
-				self.model.dotMouseOver$.next(self.model._initialDotHoverEvent);
-			})
 			.transition()
 			.duration(200)
 			.ease(easeLinear)
 			.attr('fill-opacity', function (): number {
-				const dotMouseOverEvent: DotHoverEvent = self.model.dotMouseOver$.getValue();
+				const dotMouseOverEvent: DotActionEvent = self.model.dotMouseOver$.getValue();
 				let opacity: number;
 				if (dotMouseOverEvent.dotId === undefined) {
 					opacity = 0.8;
