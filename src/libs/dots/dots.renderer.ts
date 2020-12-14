@@ -8,6 +8,7 @@ import { PossiblePointsService } from './services/possible-points.service';
 import { easeLinear, select } from 'd3';
 import { Sector } from '../../models/sector';
 import { DotHoverEvent } from '../../models/dot-hover-event';
+import { debounceTime } from 'rxjs/operators';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -37,8 +38,14 @@ export class DotsRenderer {
 			this.model.dots$,
 		]).subscribe(
 			([rangeX, rangeY, config, sectors, ringNames, dots]: [number, number, RadarChartConfig, Sector[], string[], RadarDot[]]) => {
-				const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
-				this.render(this.container, possiblePoints);
+				if (this.isDotsValid(ringNames, sectors, dots)) {
+					const possiblePoints: Map<string, PossiblePoint[]> = this.possiblePointsService.calculatePossiblePoints(
+						this.dotsContainer
+					);
+					this.render(this.container, possiblePoints);
+				} else {
+					console.warn('Dataset is not valid. Check that your rings and sectors are appropriate for dots.');
+				}
 			}
 		);
 
@@ -51,6 +58,20 @@ export class DotsRenderer {
 
 	private initContainers(): void {
 		this.dotsContainer = this.container.attr('transform', `translate(${this.radarDiameter}, 0) rotate(90)`);
+	}
+
+	private isDotsValid(ringNames: string[], sectors: Sector[], dots: RadarDot[]): boolean {
+		const uniqueRings: Set<string> = new Set();
+		const uniqueSectors: Set<string> = new Set();
+		dots.forEach((dot: RadarDot) => {
+			uniqueRings.add(dot.ring);
+			uniqueSectors.add(dot.sector);
+		});
+
+		const isRingsValid: boolean = ringNames.every((ringName: string) => uniqueRings.has(ringName));
+		const isDotsValid: boolean = isRingsValid && sectors.every((sector: Sector) => uniqueSectors.has(sector.name));
+
+		return isDotsValid;
 	}
 
 	private render(container: D3Selection, possiblePoints: Map<string, PossiblePoint[]>): void {
