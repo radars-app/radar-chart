@@ -48,12 +48,6 @@ export class DotsRenderer {
 				}
 			}
 		);
-
-		merge(this.model.dotHovered$, this.model.dotHoveredOut$).subscribe(() => {
-			const possiblePoints: Map<string, PossiblePoint[]> =
-				this.possiblePointsService.cachedPossiblePoints || this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
-			this.render(this.container, possiblePoints);
-		});
 	}
 
 	private initContainers(): void {
@@ -133,7 +127,7 @@ export class DotsRenderer {
 		container.classed('dot', true);
 
 		ClickAction.applyTo(container, this.model.dotClicked$);
-		HoverAction.applyTo(container, this.model.dotHovered$, this.model.dotHoveredOut$);
+		HoverAction.applyTo(container, this.model.dotHovered$);
 	}
 
 	private renderCircle(container: D3Selection, color: string): void {

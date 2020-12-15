@@ -3,6 +3,17 @@
 }
 
 .dot {
+	opacity: 0.8;
+	transition: opacity 0.2s linear;
+
+	&--blurred {
+		opacity: 0.6;
+	}
+
+	&--hovered {
+		opacity: 1;
+	}
+
 	&__number {
 		user-select: none;
 		pointer-events: none;

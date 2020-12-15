@@ -13,10 +13,8 @@ export class RadarChartModel {
 	public readonly dots$: BehaviorSubject<RadarDot[]>;
 
 	public readonly dotHovered$: Subject<DotAction>;
-	public readonly dotHoveredOut$: Subject<DotAction>;
 	public readonly dotClicked$: Subject<DotAction>;
 
-	public readonly zoomEmitted$: Subject<true>;
 	public readonly zoomIn$: Subject<void>;
 	public readonly zoomOut$: Subject<void>;
 
@@ -27,9 +25,7 @@ export class RadarChartModel {
 		this.ringNames$ = new BehaviorSubject([]);
 		this.dots$ = new BehaviorSubject([]);
 		this.dotHovered$ = new Subject();
-		this.dotHoveredOut$ = new Subject();
 		this.dotClicked$ = new Subject();
-		this.zoomEmitted$ = new Subject();
 		this.zoomIn$ = new Subject();
 		this.zoomOut$ = new Subject();
 	}
