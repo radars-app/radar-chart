@@ -1,14 +1,12 @@
-import { BehaviorSubject, combineLatest } from 'rxjs';
+import { BehaviorSubject, combineLatest, merge } from 'rxjs';
 import { D3Selection } from '../../models/types/d3-selection';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
 import { RadarChartModel } from '../radar-chart/radar-chart.model';
 import { RadarDot } from '../../models/radar-dot';
 import { PossiblePointsService } from './services/possible-points.service';
-import { easeLinear, select } from 'd3';
+import { select } from 'd3';
 import { Sector } from '../../models/sector';
-import { DotActionEvent } from '../../models/dot-action-event';
-import { debounceTime } from 'rxjs/operators';
 import { ClickAction } from './actions/click-action';
 import { HoverAction } from './actions/hover-action';
 
@@ -51,7 +49,7 @@ export class DotsRenderer {
 			}
 		);
 
-		combineLatest([this.model.dotMouseOver$, this.model.dotMouseOut$]).subscribe(() => {
+		merge(this.model.dotHovered$, this.model.dotHoveredOut$).subscribe(() => {
 			const possiblePoints: Map<string, PossiblePoint[]> =
 				this.possiblePointsService.cachedPossiblePoints || this.possiblePointsService.calculatePossiblePoints(this.dotsContainer);
 			this.render(this.container, possiblePoints);
@@ -132,24 +130,10 @@ export class DotsRenderer {
 		const self: DotsRenderer = this;
 		const dot: RadarDot = container.datum();
 
-		ClickAction.applyTo(container, this.model.dotClick$);
-		HoverAction.applyTo(container, this.model);
+		container.classed('dot', true);
 
-		container
-			.classed('dot', true)
-			.transition()
-			.duration(200)
-			.ease(easeLinear)
-			.attr('fill-opacity', function (): number {
-				const dotMouseOverEvent: DotActionEvent = self.model.dotMouseOver$.getValue();
-				let opacity: number;
-				if (dotMouseOverEvent.dotId === undefined) {
-					opacity = 0.8;
-				} else {
-					opacity = dotMouseOverEvent.dotId === dot.id ? 1 : 0.6;
-				}
-				return opacity;
-			});
+		ClickAction.applyTo(container, this.model.dotClicked$);
+		HoverAction.applyTo(container, this.model.dotHovered$, this.model.dotHoveredOut$);
 	}
 
 	private renderCircle(container: D3Selection, color: string): void {
