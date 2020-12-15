@@ -2,9 +2,9 @@ import { D3Selection } from '../../models/types/d3-selection';
 import { RadarChartConfig } from './radar-chart.config';
 import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
-import { BehaviorSubject, combineLatest, merge } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { Size } from '../../models/size';
-import { select, zoom, ZoomBehavior } from 'd3';
+import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { DotsRenderer } from '../dots/dots.renderer';
@@ -66,6 +66,7 @@ export class RadarChartRenderer {
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
 			self.zoomContainer.attr('transform', event.transform.toString());
 			self.scale = event.transform.k;
+			self.model.dragged$.next();
 		});
 
 		this.scale = this.calculateInitialScale();

@@ -126,8 +126,8 @@ export class DotsRenderer {
 
 		container.classed('dot', true);
 
-		ClickAction.applyTo(container, this.model.dotClicked$);
-		HoverAction.applyTo(container, this.model.dotHovered$);
+		ClickAction.applyTo(container, this.model);
+		HoverAction.applyTo(container, this.model);
 	}
 
 	private renderCircle(container: D3Selection, color: string): void {

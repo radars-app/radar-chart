@@ -1,13 +1,12 @@
-import { easeLinear, select, selectAll } from 'd3';
-import { Subject } from 'rxjs';
-import { DotAction } from '../../..';
+import { selectAll } from 'd3';
 import { RadarDot } from '../../../models/radar-dot';
 import { D3Selection } from '../../../models/types/d3-selection';
+import { RadarChartModel } from '../../radar-chart/radar-chart.model';
 
 export class HoverAction {
 	public static hoveredDotId: string = undefined;
 
-	public static applyTo(container: D3Selection, hoveredEmitter: Subject<DotAction>): void {
+	public static applyTo(container: D3Selection, model: RadarChartModel): void {
 		const hoveredClassName: string = 'dot--hovered';
 		const blurredClassName: string = 'dot--blurred';
 		const dot: RadarDot = container.datum();
@@ -15,12 +14,12 @@ export class HoverAction {
 		container
 			.on('mouseenter', function (): void {
 				HoverAction.hoveredDotId = dot.id;
-				hoveredEmitter.next({
+				model.dotHovered$.next({
 					dotId: dot.id,
-					selector: `.${hoveredClassName}`,
+					target: this,
 				});
-				container.classed(hoveredClassName, HoverAction.hoveredDotId === dot.id);
 				selectAll('g.dot').classed(blurredClassName, true);
+				container.classed(hoveredClassName, HoverAction.hoveredDotId === dot.id);
 			})
 			.on('mouseleave', function (): void {
 				selectAll('g.dot').classed(hoveredClassName, false);

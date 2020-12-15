@@ -1,4 +1,4 @@
 export interface DotAction {
 	dotId: string;
-	selector?: string;
+	target: SVGGElement;
 }
