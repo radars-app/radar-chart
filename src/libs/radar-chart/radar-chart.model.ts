@@ -17,7 +17,7 @@ export class RadarChartModel {
 
 	public readonly zoomIn$: Subject<void>;
 	public readonly zoomOut$: Subject<void>;
-	public readonly dragged$: Subject<void>;
+	public readonly zoomed$: Subject<void>;
 
 	constructor() {
 		this.rangeX$ = new BehaviorSubject(1366);
@@ -29,7 +29,7 @@ export class RadarChartModel {
 		this.dotClicked$ = new Subject();
 		this.zoomIn$ = new Subject();
 		this.zoomOut$ = new Subject();
-		this.dragged$ = new Subject();
+		this.zoomed$ = new Subject();
 	}
 
 	public zoomIn(): void {

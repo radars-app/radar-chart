@@ -66,7 +66,7 @@ export class RadarChartRenderer {
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
 			self.zoomContainer.attr('transform', event.transform.toString());
 			self.scale = event.transform.k;
-			self.model.dragged$.next();
+			self.model.zoomed$.next();
 		});
 
 		this.scale = this.calculateInitialScale();

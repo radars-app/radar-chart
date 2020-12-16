@@ -7,33 +7,17 @@ import { RadarChartModel } from '../../radar-chart/radar-chart.model';
 import { TracksService } from './tracks.service';
 
 export class PossiblePointsService {
-	private possiblePoints: Map<string, PossiblePoint[]>;
 	private tracksService: TracksService;
 
 	constructor(private config$: BehaviorSubject<RadarChartConfig>, private model: RadarChartModel) {
 		this.tracksService = new TracksService(config$);
 	}
 
-	public get cachedPossiblePoints(): Map<string, PossiblePoint[]> {
-		return this.copyPossiblePoints(this.possiblePoints);
-	}
-
 	public calculatePossiblePoints(container: D3Selection): Map<string, PossiblePoint[]> {
 		const trackElements: SVGPathElement[] = this.calculateTrackPaths(container);
-		this.possiblePoints = this.calculatePossiblePointsByTracks(trackElements);
+		const possiblePoints: Map<string, PossiblePoint[]> = this.calculatePossiblePointsByTracks(trackElements);
 		this.tracksService.clearTracks(container);
-		return this.copyPossiblePoints(this.possiblePoints);
-	}
-
-	private copyPossiblePoints(possiblePoints: Map<string, PossiblePoint[]>): Map<string, PossiblePoint[]> {
-		const copiedPoints: Map<string, PossiblePoint[]> = new Map();
-		possiblePoints.forEach((sectorPoints: PossiblePoint[], key: string) => {
-			const cachedSectorPoints: PossiblePoint[] = sectorPoints.map((point: PossiblePoint) => {
-				return { ...point };
-			});
-			copiedPoints.set(key, cachedSectorPoints);
-		});
-		return copiedPoints;
+		return possiblePoints;
 	}
 
 	private calculateTrackPaths(container: D3Selection): SVGPathElement[] {
