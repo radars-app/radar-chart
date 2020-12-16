@@ -18,14 +18,15 @@ export class HoverAction {
 					dotId: dot.id,
 					target: this,
 				});
-				selectAll('g.dot').classed(blurredClassName, true);
+				const allDots: D3Selection = selectAll('g.dot');
+				allDots.classed(blurredClassName, true);
 				container.classed(hoveredClassName, HoverAction.hoveredDotId === dot.id);
 			})
 			.on('mouseleave', function (): void {
-				selectAll('g.dot').classed(hoveredClassName, false);
-				selectAll('g.dot').classed(blurredClassName, false);
-				this.classList.remove(hoveredClassName);
 				HoverAction.hoveredDotId = undefined;
+				const allDots: D3Selection = selectAll('g.dot');
+				allDots.classed(hoveredClassName, false);
+				allDots.classed(blurredClassName, false);
 			});
 	}
 }
