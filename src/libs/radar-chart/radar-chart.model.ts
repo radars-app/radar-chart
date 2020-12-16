@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { DotActionEvent } from '../../models/dot-action-event';
+import { DotAction } from '../../models/dot-action';
 import { RadarDot } from '../../models/radar-dot';
 import { Sector } from '../../models/sector';
 
@@ -12,14 +12,12 @@ export class RadarChartModel {
 	public readonly ringNames$: BehaviorSubject<string[]>;
 	public readonly dots$: BehaviorSubject<RadarDot[]>;
 
-	public readonly _initialDotActionEvent: DotActionEvent = { dotId: undefined, element: null };
-	public readonly dotMouseOver$: BehaviorSubject<DotActionEvent>;
-	public readonly dotMouseOut$: BehaviorSubject<DotActionEvent>;
-	public readonly dotClick$: Subject<DotActionEvent>;
+	public readonly dotHovered$: Subject<DotAction>;
+	public readonly dotClicked$: Subject<DotAction>;
 
-	public readonly zoomEmitted$: Subject<true>;
-	public readonly zoomIn$: Subject<true>;
-	public readonly zoomOut$: Subject<false>;
+	public readonly zoomIn$: Subject<void>;
+	public readonly zoomOut$: Subject<void>;
+	public readonly zoomed$: Subject<void>;
 
 	constructor() {
 		this.rangeX$ = new BehaviorSubject(1366);
@@ -27,19 +25,18 @@ export class RadarChartModel {
 		this.sectors$ = new BehaviorSubject([]);
 		this.ringNames$ = new BehaviorSubject([]);
 		this.dots$ = new BehaviorSubject([]);
-		this.dotMouseOver$ = new BehaviorSubject(this._initialDotActionEvent);
-		this.dotMouseOut$ = new BehaviorSubject(this._initialDotActionEvent);
-		this.dotClick$ = new Subject();
-		this.zoomEmitted$ = new Subject();
+		this.dotHovered$ = new Subject();
+		this.dotClicked$ = new Subject();
 		this.zoomIn$ = new Subject();
 		this.zoomOut$ = new Subject();
+		this.zoomed$ = new Subject();
 	}
 
 	public zoomIn(): void {
-		this.zoomIn$.next(true);
+		this.zoomIn$.next();
 	}
 
 	public zoomOut(): void {
-		this.zoomOut$.next(false);
+		this.zoomOut$.next();
 	}
 }

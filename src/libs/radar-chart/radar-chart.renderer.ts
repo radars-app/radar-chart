@@ -2,7 +2,7 @@ import { D3Selection } from '../../models/types/d3-selection';
 import { RadarChartConfig } from './radar-chart.config';
 import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
-import { BehaviorSubject, combineLatest, merge } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { Size } from '../../models/size';
 import { select, zoom } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
@@ -66,7 +66,7 @@ export class RadarChartRenderer {
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
 			self.zoomContainer.attr('transform', event.transform.toString());
 			self.scale = event.transform.k;
-			self.model.zoomEmitted$.next(true);
+			self.model.zoomed$.next();
 		});
 
 		this.scale = this.calculateInitialScale();
@@ -77,12 +77,22 @@ export class RadarChartRenderer {
 
 		const scalePointX: number = this.size.width / 2;
 		const scalePointY: number = this.size.height / 2;
-		merge(this.model.zoomIn$, this.model.zoomOut$).subscribe((isZoomIn: boolean) => {
-			this.scale = isZoomIn ? 2 * this.scale : this.scale / 2;
-			this.container.transition().duration(300).call(zoomBehavior.scaleTo, this.scale, [scalePointX, scalePointY]);
+
+		this.model.zoomIn$.subscribe(() => {
+			this.scale = 2 * this.scale;
+			this.rescaleRadarTo(this.container, zoomBehavior, [scalePointX, scalePointY]);
+		});
+
+		this.model.zoomOut$.subscribe(() => {
+			this.scale = this.scale / 2;
+			this.rescaleRadarTo(this.container, zoomBehavior, [scalePointX, scalePointY]);
 		});
 
 		this.container.call(zoomBehavior);
+	}
+
+	private rescaleRadarTo(container: D3Selection, zoomBehavior: D3ZoomBehavior, [scalePointX, scalePointY]: [number, number]): void {
+		container.transition().duration(300).call(zoomBehavior.scaleTo, this.scale, [scalePointX, scalePointY]);
 	}
 
 	private calculateInitialScale(): number {
