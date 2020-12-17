@@ -55,15 +55,9 @@ export class DotsRenderer {
 	}
 
 	private isDotsValid(ringNames: string[], sectors: Sector[], dots: RadarDot[]): boolean {
-		const uniqueRings: Set<string> = new Set();
-		const uniqueSectors: Set<string> = new Set();
-		dots.forEach((dot: RadarDot) => {
-			uniqueRings.add(dot.ring);
-			uniqueSectors.add(dot.sector);
-		});
-
-		const isRingsValid: boolean = ringNames.every((ringName: string) => uniqueRings.has(ringName));
-		const isDotsValid: boolean = isRingsValid && sectors.every((sector: Sector) => uniqueSectors.has(sector.name));
+		const isRingsValid: boolean = dots.every((dot: RadarDot) => ringNames.find((ringName: string) => ringName === dot.ring));
+		const isDotsValid: boolean =
+			isRingsValid && dots.every((dot: RadarDot) => sectors.find((sector: Sector) => sector.name === dot.sector));
 
 		return isDotsValid;
 	}
