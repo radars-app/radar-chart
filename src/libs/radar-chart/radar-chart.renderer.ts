@@ -16,11 +16,11 @@ export class RadarChartRenderer {
 	private ringsRenderer: RingsRenderer;
 	private ringsContainer: D3Selection;
 
-	private dividersRenderer: DividersRenderer;
-	private dividersContainer: D3Selection;
-
 	private dotsRenderer: DotsRenderer;
 	private dotsContainer: D3Selection;
+
+	private dividersRenderer: DividersRenderer;
+	private dividersContainer: D3Selection;
 
 	private zoomContainer: D3Selection;
 
@@ -46,9 +46,9 @@ export class RadarChartRenderer {
 	public start(): void {
 		this.ringsRenderer = new RingsRenderer(this.ringsContainer, this.model, this.config$);
 
-		this.dividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
-
 		this.dotsRenderer = new DotsRenderer(this.dotsContainer, this.model, this.config$);
+
+		this.dividersRenderer = new DividersRenderer(this.dividersContainer, this.model, this.config$);
 
 		this.initBehavior();
 	}
@@ -106,9 +106,9 @@ export class RadarChartRenderer {
 
 		this.ringsContainer = this.zoomContainer.append('g').attr('class', 'radar-chart__rings');
 
-		this.dividersContainer = this.zoomContainer.append('g').attr('class', 'radar-chart__dividers');
-
 		this.dotsContainer = this.zoomContainer.append('g').attr('class', 'radar-chart__dots');
+
+		this.dividersContainer = this.zoomContainer.append('g').attr('class', 'radar-chart__dividers');
 	}
 
 	private render(): void {

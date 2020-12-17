@@ -34,7 +34,6 @@ export class DividersRenderer {
 	private createDividerModels(sectors: Sector[]): Divider[] {
 		const startDegree: number = 270;
 		const dividers: Divider[] = this.initDividers(startDegree, sectors);
-		this.setLabeledDivider(dividers);
 		return dividers;
 	}
 
@@ -42,26 +41,11 @@ export class DividersRenderer {
 		const deltaDegree: number = 360 / sectors.length;
 		let currentDegree: number = startDegree - deltaDegree;
 		return sectors.map(() => {
+			currentDegree += deltaDegree;
 			return {
-				isLabeled: false,
-				rotation: currentDegree += deltaDegree,
+				isLabeled: currentDegree === 270,
+				rotation: currentDegree,
 			};
-		});
-	}
-
-	private setLabeledDivider(dividers: Divider[]): void {
-		dividers.some((divider: Divider, index: number) => {
-			const currentRotation: number = dividers[index].rotation;
-			const nextRotation: number = dividers[index + 1] ? dividers[index + 1].rotation : currentRotation;
-
-			const isLabeledDivider: boolean = Math.abs(360 - currentRotation) <= Math.abs(360 - nextRotation);
-
-			if (isLabeledDivider) {
-				divider.isLabeled = true;
-				return true;
-			}
-
-			return false;
 		});
 	}
 
