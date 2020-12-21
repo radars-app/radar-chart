@@ -41,7 +41,14 @@ export class PossiblePointsService {
 			trackElements.forEach((track: SVGPathElement, trackIndex: number) => {
 				const pointKey: string = `${this.getRingNameByTrackIndex(ringNames, trackElements.length, trackIndex)}-${sector.name}`;
 				const isEdgeTrack: boolean = this.isSectorsEdgeTrack(ringNames.length, trackElements.length, trackIndex);
-				const sectorPoints: PossiblePoint[] = this.getPointsOnSectorsTrack(track, sectorIndex, sectors.length, isEdgeTrack);
+				const isCenterTrack: boolean = this.isSectorsCenterTrack(ringNames.length, trackElements.length, trackIndex);
+				const sectorPoints: PossiblePoint[] = this.getPointsOnSectorsTrack(
+					track,
+					sectorIndex,
+					sectors.length,
+					isEdgeTrack,
+					isCenterTrack
+				);
 				this.pushPossiblePoint(possiblePoints, pointKey, sectorPoints);
 			});
 		});
@@ -69,11 +76,25 @@ export class PossiblePointsService {
 		return isSectorsEdgeTrack;
 	}
 
+	private isSectorsCenterTrack(ringsQuantity: number, tracksQuantity: number, trackIndex: number): boolean {
+		const tracksPerRing: number = tracksQuantity / ringsQuantity;
+		const trackInsideSector: number = (trackIndex + 1) % tracksPerRing;
+		const centerTrack: number = Math.ceil(tracksPerRing / 2);
+		let isSectorsCenterTrack: boolean;
+		if (tracksPerRing % 2 === 0) {
+			isSectorsCenterTrack = centerTrack === trackInsideSector || centerTrack - 1 === trackInsideSector;
+		} else {
+			isSectorsCenterTrack = centerTrack === trackInsideSector;
+		}
+		return isSectorsCenterTrack;
+	}
+
 	private getPointsOnSectorsTrack(
 		track: SVGPathElement,
 		sectorIndex: number,
 		sectorsQuantity: number,
-		isEdgeTrack: boolean
+		isEdgeTrack: boolean,
+		isCenterTrack: boolean
 	): PossiblePoint[] {
 		const dotDiameterWithOffsets: number = this.config$.getValue().dotsConfig.dotDiameterWithOffsets;
 
@@ -82,18 +103,31 @@ export class PossiblePointsService {
 		const startLength: number = pointsNormalize + dotDiameterWithOffsets / 2 + trackLength * sectorIndex;
 		const pointsQuantity: number = Math.floor(trackLength / dotDiameterWithOffsets);
 
-		return [...new Array(pointsQuantity)].map((_: undefined, pointIndex: number) => {
+		const possiblePoints: PossiblePoint[] = [...new Array(pointsQuantity)].map((_: undefined, pointIndex: number) => {
 			const pointLength: number = startLength + dotDiameterWithOffsets * pointIndex;
 
-			const isEdgePoint: boolean = pointIndex === 0 || pointIndex === pointsQuantity - 1;
+			const isFirstPoint: boolean = pointIndex === 0;
+			const isLastPoint: boolean = pointIndex === pointsQuantity - 1;
+			const isFirstSector: boolean = sectorIndex === 0;
+			const isLastSector: boolean = sectorIndex === sectorsQuantity - 1;
+
+			const isRightAreaForLabel: boolean = isCenterTrack && isFirstSector && isFirstPoint;
+			const isLeftAreaForLabel: boolean = isCenterTrack && isLastSector && isLastPoint;
+
+			if (isRightAreaForLabel || isLeftAreaForLabel) {
+				return null;
+			}
+
 			const isCenterPont: boolean = Math.floor(pointsQuantity / 2) === pointIndex;
 			const point: SVGPoint = track.getPointAtLength(pointLength);
 			const possiblePoint: PossiblePoint = {
 				x: point.x,
 				y: point.y,
-				isEdgePoint: isEdgeTrack && isEdgePoint,
+				isEdgePoint: isEdgeTrack && (isFirstPoint || isLastPoint),
 			};
 			return possiblePoint;
 		});
+
+		return possiblePoints.filter((possiblePoint: PossiblePoint) => possiblePoint);
 	}
 }

@@ -3,7 +3,6 @@ import { DividersLabel } from '../../../models/dividers-label';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { LabelsConfig } from './labels.config';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { selectAll } from 'd3';
 
 export class LabelsRenderer {
 	constructor(private config$: BehaviorSubject<RadarChartConfig>) {}
@@ -26,7 +25,6 @@ export class LabelsRenderer {
 		this.renderText(textToEnter);
 		textToExit.remove();
 
-		this.initBackgroundWidth(selectAll('text.label'));
 		const backgroundToUpdate: D3Selection = backgroundContainer.selectAll('rect.label-background').data(labels);
 		const backgroundToEnter: D3Selection = backgroundToUpdate.enter().append('rect');
 		const backgroundToExit: D3Selection = backgroundToUpdate.exit();
@@ -39,13 +37,14 @@ export class LabelsRenderer {
 	private renderBackground(container: D3Selection): void {
 		container
 			.classed('label-background', true)
-			.attr('width', (label: DividersLabel) => label.backgroundWidth + 7)
+			.attr('width', (label: DividersLabel) => label.backgroundWidth)
 			.attr('height', this.labelsConfig.lineHeight)
 			.attr('fill', this.config.backgroundColor)
-			.attr(
-				'transform',
-				(label: DividersLabel) => `translate(${label.x - label.backgroundWidth / 2 - 3}, ${-this.labelsConfig.lineHeight / 2})`
-			);
+			.attr('transform', (label: DividersLabel) => {
+				return `translate(${label.x - label.backgroundWidth / 2}, ${-this.labelsConfig.lineHeight / 2}) rotate(90, ${
+					label.backgroundWidth / 2
+				}, ${this.labelsConfig.lineHeight / 2})`;
+			});
 	}
 
 	private renderText(container: D3Selection): void {
@@ -55,14 +54,10 @@ export class LabelsRenderer {
 			.attr('x', (label: DividersLabel) => label.x)
 			.attr('font-family', this.labelsConfig.fontFamily)
 			.attr('font-size', this.labelsConfig.fontSize)
+			.attr('letter-spacing', this.labelsConfig.letterSpacing)
 			.attr('fill', this.labelsConfig.textColor)
-			.attr('dominant-baseline', 'middle');
-	}
-
-	private initBackgroundWidth(text: D3Selection): void {
-		text.each(function (label: DividersLabel): void {
-			label.backgroundWidth = this.getComputedTextLength();
-		});
+			.attr('dominant-baseline', 'central')
+			.attr('transform', (label: DividersLabel) => `rotate(90, ${label.x}, 0)`);
 	}
 
 	private calculateLabels(range: number, ringNames: string[]): DividersLabel[] {
@@ -74,6 +69,7 @@ export class LabelsRenderer {
 			return {
 				text: ringName,
 				x: currentX += deltaX,
+				backgroundWidth: this.config.ringsConfig.strokeWidth + 1,
 			};
 		});
 		return labels;
