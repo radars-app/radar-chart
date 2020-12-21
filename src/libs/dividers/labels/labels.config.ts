@@ -1,4 +1,5 @@
 export class LabelsConfig {
+	public isLabelShown: boolean;
 	public fontFamily: string;
 	public fontSize: number;
 	public lineHeight: number;
@@ -6,6 +7,7 @@ export class LabelsConfig {
 	public textColor: string;
 
 	constructor() {
+		this.isLabelShown = true;
 		this.textColor = '#6B7885';
 		this.fontSize = 10;
 		this.lineHeight = 12;

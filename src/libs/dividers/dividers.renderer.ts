@@ -67,10 +67,12 @@ export class DividersRenderer {
 			self.renderDividersContainer(dividerContainer, range);
 			self.renderDividers(dividerLine, range);
 
-			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
-			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
-			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
-			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+			if (self.config.ringsConfig.labelsConfig.isLabelShown) {
+				const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
+				const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
+				const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
+				self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+			}
 		});
 	}
 
@@ -82,10 +84,12 @@ export class DividersRenderer {
 			self.renderDividersContainer(dividerContainer, range);
 			self.renderDividers(divider, range);
 
-			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
-			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
-			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
-			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+			if (self.config.ringsConfig.labelsConfig.isLabelShown) {
+				const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
+				const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
+				const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
+				self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+			}
 		});
 	}
 

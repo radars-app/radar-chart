@@ -84,11 +84,13 @@ export class DotsRenderer {
 			const dotColor: string = self.getColorBySectorName(dot.sector);
 			self.renderCircle(circle, dotColor);
 
-			const number: D3Selection = container.append('text');
-			self.renderNumber(number, dot.number);
-
 			const point: PossiblePoint = self.choosePoint(dot, points);
 			self.positionDot(container, point);
+
+			if (self.config.dotsConfig.isNumberShown) {
+				const number: D3Selection = container.append('text');
+				self.renderNumber(number, dot.number);
+			}
 		});
 	}
 
@@ -102,11 +104,13 @@ export class DotsRenderer {
 			const dotColor: string = self.getColorBySectorName(dot.sector);
 			self.renderCircle(circle, dotColor);
 
-			const number: D3Selection = container.select('text.dot__number');
-			self.renderNumber(number, dot.number);
-
 			const point: PossiblePoint = self.choosePoint(dot, points);
 			self.positionDot(container, point);
+
+			if (self.config.dotsConfig.isNumberShown) {
+				const number: D3Selection = container.select('text.dot__number');
+				self.renderNumber(number, dot.number);
+			}
 		});
 	}
 
@@ -115,13 +119,14 @@ export class DotsRenderer {
 	}
 
 	private renderDotContainer(container: D3Selection): void {
-		const self: DotsRenderer = this;
-		const dot: RadarDot = container.datum();
-
 		container.classed('dot', true);
 
-		ClickAction.applyTo(container, this.model);
-		HoverAction.applyTo(container, this.model);
+		if (this.config.dotsConfig.hasHoverAction) {
+			ClickAction.applyTo(container, this.model);
+		}
+		if (this.config.dotsConfig.hasHoverAction) {
+			HoverAction.applyTo(container, this.model);
+		}
 	}
 
 	private renderCircle(container: D3Selection, color: string): void {
