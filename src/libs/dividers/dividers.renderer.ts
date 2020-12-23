@@ -74,10 +74,10 @@ export class DividersRenderer {
 		const self: DividersRenderer = this;
 		container.each(function (): void {
 			const dividerContainer: D3Selection = select(this);
-			const divider: D3Selection = dividerContainer.append('line');
+			const dividerLine: D3Selection = dividerContainer.append('line');
 			self.renderDividersContainer(dividerContainer, range);
-			self.renderDividers(divider, range);
 			self.renderLabels(dividerContainer, range);
+			self.renderDividers(dividerLine, range);
 		});
 	}
 
