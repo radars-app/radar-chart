@@ -4,29 +4,32 @@ import { D3Selection } from '../../../models/types/d3-selection';
 import { RadarChartModel } from '../../radar-chart/radar-chart.model';
 
 export class HoverAction {
-	public static hoveredDotId: string = undefined;
+	public hoveredDotId: string = undefined;
+	public hoveredClassName: string = 'dot--hovered';
+	public blurredClassName: string = 'dot--blurred';
 
-	public static applyTo(container: D3Selection, model: RadarChartModel): void {
-		const hoveredClassName: string = 'dot--hovered';
-		const blurredClassName: string = 'dot--blurred';
+	constructor(private model: RadarChartModel) {}
+
+	public applyTo(container: D3Selection): void {
 		const dot: RadarDot = container.datum();
+		const self: HoverAction = this;
 
 		container
 			.on('mouseenter', function (): void {
-				HoverAction.hoveredDotId = dot.id;
-				model.dotHovered$.next({
+				self.hoveredDotId = dot.id;
+				self.model.dotHovered$.next({
 					dotId: dot.id,
 					target: this,
 				});
 				const allDots: D3Selection = selectAll('g.dot');
-				allDots.classed(blurredClassName, true);
-				container.classed(hoveredClassName, HoverAction.hoveredDotId === dot.id);
+				allDots.classed(self.blurredClassName, true);
+				container.classed(self.hoveredClassName, self.hoveredDotId === dot.id);
 			})
 			.on('mouseleave', function (): void {
-				HoverAction.hoveredDotId = undefined;
+				self.hoveredDotId = undefined;
 				const allDots: D3Selection = selectAll('g.dot');
-				allDots.classed(hoveredClassName, false);
-				allDots.classed(blurredClassName, false);
+				allDots.classed(self.hoveredClassName, false);
+				allDots.classed(self.blurredClassName, false);
 			});
 	}
 }

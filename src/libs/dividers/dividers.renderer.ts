@@ -61,31 +61,23 @@ export class DividersRenderer {
 
 	private update(container: D3Selection, range: number, ringNames: string[]): void {
 		const self: DividersRenderer = this;
-		container.each(function (dividerModel: Divider): void {
+		container.each(function (): void {
 			const dividerContainer: D3Selection = select(this);
 			const dividerLine: D3Selection = dividerContainer.select('line.divider__line');
 			self.renderDividersContainer(dividerContainer, range);
+			self.renderLabels(dividerContainer, range);
 			self.renderDividers(dividerLine, range);
-
-			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
-			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
-			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
-			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
 		});
 	}
 
 	private enter(container: D3Selection, range: number, ringNames: string[]): void {
 		const self: DividersRenderer = this;
-		container.each(function (dividerModel: Divider): void {
+		container.each(function (): void {
 			const dividerContainer: D3Selection = select(this);
-			const divider: D3Selection = dividerContainer.append('line');
+			const dividerLine: D3Selection = dividerContainer.append('line');
 			self.renderDividersContainer(dividerContainer, range);
-			self.renderDividers(divider, range);
-
-			const ringNamesToRender: string[] = dividerModel.isLabeled ? ringNames : [];
-			const backgroundContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels-background');
-			const textContainer: D3Selection = self.appendContainerIfNotExist(dividerContainer, 'divider__labels');
-			self.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+			self.renderLabels(dividerContainer, range);
+			self.renderDividers(dividerLine, range);
 		});
 	}
 
@@ -108,6 +100,15 @@ export class DividersRenderer {
 			.attr('y2', 0)
 			.attr('stroke', this.config.dividersConfig.dividerColor)
 			.attr('stroke-width', this.config.dividersConfig.strokeWidth);
+	}
+
+	private renderLabels(container: D3Selection, range: number): void {
+		if (this.config.ringsConfig.labelsConfig.isLabelShown) {
+			const ringNamesToRender: string[] = container.datum().isLabeled ? this.model.ringNames$.getValue() : [];
+			const backgroundContainer: D3Selection = this.appendContainerIfNotExist(container, 'divider__labels-background');
+			const textContainer: D3Selection = this.appendContainerIfNotExist(container, 'divider__labels');
+			this.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
+		}
 	}
 
 	private appendContainerIfNotExist(container: D3Selection, className: string): D3Selection {

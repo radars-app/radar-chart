@@ -16,6 +16,9 @@ export class DotsRenderer {
 
 	private radarDiameter: number;
 
+	private clickAction: ClickAction;
+	private hoverAction: HoverAction;
+
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();
 	}
@@ -29,6 +32,9 @@ export class DotsRenderer {
 	}
 
 	private initBehavior(): void {
+		this.hoverAction = new HoverAction(this.model);
+		this.clickAction = new ClickAction(this.model);
+
 		combineLatest([
 			this.model.rangeX$,
 			this.model.rangeY$,
@@ -84,11 +90,13 @@ export class DotsRenderer {
 			const dotColor: string = self.getColorBySectorName(dot.sector);
 			self.renderCircle(circle, dotColor);
 
-			const number: D3Selection = container.append('text');
-			self.renderNumber(number, dot.number);
-
 			const point: PossiblePoint = self.choosePoint(dot, points);
 			self.positionDot(container, point);
+
+			if (self.config.dotsConfig.isNumberShown) {
+				const number: D3Selection = container.append('text');
+				self.renderNumber(number, dot.number);
+			}
 		});
 	}
 
@@ -102,11 +110,13 @@ export class DotsRenderer {
 			const dotColor: string = self.getColorBySectorName(dot.sector);
 			self.renderCircle(circle, dotColor);
 
-			const number: D3Selection = container.select('text.dot__number');
-			self.renderNumber(number, dot.number);
-
 			const point: PossiblePoint = self.choosePoint(dot, points);
 			self.positionDot(container, point);
+
+			if (self.config.dotsConfig.isNumberShown) {
+				const number: D3Selection = container.select('text.dot__number');
+				self.renderNumber(number, dot.number);
+			}
 		});
 	}
 
@@ -115,13 +125,14 @@ export class DotsRenderer {
 	}
 
 	private renderDotContainer(container: D3Selection): void {
-		const self: DotsRenderer = this;
-		const dot: RadarDot = container.datum();
-
 		container.classed('dot', true);
 
-		ClickAction.applyTo(container, this.model);
-		HoverAction.applyTo(container, this.model);
+		if (this.config.dotsConfig.hasHoverAction) {
+			this.clickAction.applyTo(container);
+		}
+		if (this.config.dotsConfig.hasHoverAction) {
+			this.hoverAction.applyTo(container);
+		}
 	}
 
 	private renderCircle(container: D3Selection, color: string): void {

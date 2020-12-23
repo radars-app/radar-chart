@@ -3,10 +3,13 @@ import { D3Selection } from '../../../models/types/d3-selection';
 import { RadarChartModel } from '../../radar-chart/radar-chart.model';
 
 export class ClickAction {
-	public static applyTo(container: D3Selection, model: RadarChartModel): void {
+	constructor(private model: RadarChartModel) {}
+
+	public applyTo(container: D3Selection): void {
 		const dot: RadarDot = container.datum();
+		const self: ClickAction = this;
 		container.on('click', function (): void {
-			model.dotClicked$.next({
+			self.model.dotClicked$.next({
 				dotId: dot.id,
 				target: this,
 			});
