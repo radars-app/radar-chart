@@ -16,6 +16,9 @@ export class DotsRenderer {
 
 	private radarDiameter: number;
 
+	private clickAction: ClickAction;
+	private hoverAction: HoverAction;
+
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();
 	}
@@ -29,6 +32,9 @@ export class DotsRenderer {
 	}
 
 	private initBehavior(): void {
+		this.hoverAction = new HoverAction(this.model);
+		this.clickAction = new ClickAction(this.model);
+
 		combineLatest([
 			this.model.rangeX$,
 			this.model.rangeY$,
@@ -122,10 +128,10 @@ export class DotsRenderer {
 		container.classed('dot', true);
 
 		if (this.config.dotsConfig.hasHoverAction) {
-			ClickAction.applyTo(container, this.model);
+			this.clickAction.applyTo(container);
 		}
 		if (this.config.dotsConfig.hasHoverAction) {
-			HoverAction.applyTo(container, this.model);
+			this.hoverAction.applyTo(container);
 		}
 	}
 

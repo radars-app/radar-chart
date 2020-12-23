@@ -12,7 +12,7 @@ export class RadarChartConfig {
 	public readonly dotsConfig: DotsConfig;
 
 	constructor() {
-		this.offsetLeft = 540; // TODO: change to 540 as in design
+		this.offsetLeft = 540;
 		this.marginLeftRight = 1;
 		this.marginTopBottom = 18;
 		this.backgroundColor = '#F0F4F8';
