@@ -23,6 +23,7 @@ export class RadarChartRenderer {
 	private dividersContainer: D3Selection;
 
 	private zoomBehavior: D3ZoomBehavior;
+	private defaultZoom: number;
 	private zoomContainer: D3Selection;
 
 	private scale: number;
@@ -70,6 +71,11 @@ export class RadarChartRenderer {
 			this.rescaleRadarTo(this.container, this.zoomBehavior, [scalePointX, scalePointY]);
 		});
 
+		this.model.zoomReset$.subscribe(() => {
+			this.scale = this.defaultZoom;
+			this.rescaleRadarTo(this.container, this.zoomBehavior, [scalePointX, scalePointY]);
+		});
+
 		this.model.isZoomEnabled.subscribe((isZoomEnabled: boolean) => {
 			if (isZoomEnabled) {
 				this.container.call(this.zoomBehavior);
@@ -86,6 +92,9 @@ export class RadarChartRenderer {
 	private initZoomBehavior(): D3ZoomBehavior {
 		const self: RadarChartRenderer = this;
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
+			if (self.defaultZoom === undefined) {
+				self.defaultZoom = event.transform.k;
+			}
 			self.zoomContainer.attr('transform', event.transform.toString());
 			self.scale = event.transform.k;
 			self.model.zoomed$.next();
