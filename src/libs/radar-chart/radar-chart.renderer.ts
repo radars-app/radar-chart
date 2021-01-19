@@ -9,6 +9,7 @@ import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { DotsRenderer } from '../dots/dots.renderer';
 import { D3ZoomBehavior } from '../../models/types/d3-zoom-behavior';
+import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 
 export class RadarChartRenderer {
 	private container: D3Selection;
@@ -101,10 +102,11 @@ export class RadarChartRenderer {
 		});
 
 		this.scale = this.calculateInitialScale();
-		const initialTransformX: number = this.config.offsetLeft + this.config.marginLeftRight;
+		const initialTransformX: number = this.config.offsetLeft + this.config.marginLeftRight + this.calculateCenteringTransformX();
 		const initialTransformY: number = this.config.marginTopBottom;
 		zoomBehavior.scaleTo(this.container, this.scale, [0, 0]);
-		zoomBehavior.translateBy(this.container, initialTransformX, initialTransformY);
+		zoomBehavior.translateBy(this.container, initialTransformX / this.scale, initialTransformY / this.scale);
+		this.calculateCenteringTransformX();
 
 		return zoomBehavior;
 	}
@@ -115,6 +117,15 @@ export class RadarChartRenderer {
 
 	private calculateInitialScale(): number {
 		return this.size.height / this.model.rangeY$.getValue();
+	}
+
+	private calculateCenteringTransformX(): number {
+		const radarDiameter: number =
+			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config);
+		const transform: number = (this.size.width - (this.config.offsetLeft + this.config.offsetRight + this.scale * radarDiameter)) / 2;
+		const transformWithoutRightOffset: number = (this.size.width - (this.config.offsetLeft + this.scale * radarDiameter)) / 2;
+
+		return transform >= 0 ? transform : transformWithoutRightOffset;
 	}
 
 	private initContainers(): void {
