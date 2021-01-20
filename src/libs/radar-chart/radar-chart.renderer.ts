@@ -4,12 +4,13 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { Size } from '../../models/size';
-import { select, zoom, ZoomBehavior } from 'd3';
+import { select, zoom, ZoomBehavior, zoomIdentity, zoomTransform, ZoomTransform } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { DotsRenderer } from '../dots/dots.renderer';
 import { D3ZoomBehavior } from '../../models/types/d3-zoom-behavior';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
+import { Point } from '../../models/point';
 
 export class RadarChartRenderer {
 	private container: D3Selection;
@@ -24,10 +25,11 @@ export class RadarChartRenderer {
 	private dividersContainer: D3Selection;
 
 	private zoomBehavior: D3ZoomBehavior;
-	private defaultZoom: number;
 	private zoomContainer: D3Selection;
 
 	private scale: number;
+	private initialScale: number;
+	private initialTranslate: Point;
 
 	constructor(
 		private svgElement: SVGElement,
@@ -59,22 +61,22 @@ export class RadarChartRenderer {
 	private initBehavior(): void {
 		this.zoomBehavior = this.initZoomBehavior();
 
-		const scalePointX: number = this.size.width / 2;
+		const scalePointX: number = (this.size.width - this.config.offsetLeft - this.config.offsetRight) / 2 + this.config.offsetLeft;
 		const scalePointY: number = this.size.height / 2;
 
 		this.model.zoomIn$.subscribe(() => {
 			this.scale = 2 * this.scale;
-			this.rescaleRadarTo(this.container, this.zoomBehavior, [scalePointX, scalePointY]);
+			this.applyScale([scalePointX, scalePointY]);
 		});
 
 		this.model.zoomOut$.subscribe(() => {
 			this.scale = this.scale / 2;
-			this.rescaleRadarTo(this.container, this.zoomBehavior, [scalePointX, scalePointY]);
+			this.applyScale([scalePointX, scalePointY]);
 		});
 
 		this.model.zoomReset$.subscribe(() => {
-			this.scale = this.defaultZoom;
-			this.rescaleRadarTo(this.container, this.zoomBehavior, [scalePointX, scalePointY]);
+			this.scale = this.initialScale;
+			this.applyInitialTransform();
 		});
 
 		this.model.isZoomEnabled.subscribe((isZoomEnabled: boolean) => {
@@ -93,26 +95,29 @@ export class RadarChartRenderer {
 	private initZoomBehavior(): D3ZoomBehavior {
 		const self: RadarChartRenderer = this;
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
-			if (self.defaultZoom === undefined) {
-				self.defaultZoom = event.transform.k;
-			}
 			self.zoomContainer.attr('transform', event.transform.toString());
 			self.scale = event.transform.k;
 			self.model.zoomed$.next();
 		});
 
-		this.scale = this.calculateInitialScale();
-		const initialTransformX: number = this.config.offsetLeft + this.config.marginLeftRight + this.calculateCenteringTransformX();
-		const initialTransformY: number = this.config.marginTopBottom;
-		zoomBehavior.scaleTo(this.container, this.scale, [0, 0]);
-		zoomBehavior.translateBy(this.container, initialTransformX / this.scale, initialTransformY / this.scale);
-		this.calculateCenteringTransformX();
+		this.scale = this.initialScale = this.calculateInitialScale();
+		this.initialTranslate = {
+			x: this.config.offsetLeft + this.config.marginLeftRight + this.calculateCenteringTransformX(),
+			y: this.config.marginTopBottom,
+		};
+		zoomBehavior.scaleTo(this.container, this.initialScale, [0, 0]);
+		zoomBehavior.translateBy(this.container, this.initialTranslate.x / this.initialScale, this.initialTranslate.y / this.initialScale);
 
 		return zoomBehavior;
 	}
 
-	private rescaleRadarTo(container: D3Selection, zoomBehavior: D3ZoomBehavior, [scalePointX, scalePointY]: [number, number]): void {
-		container.transition().duration(300).call(zoomBehavior.scaleTo, this.scale, [scalePointX, scalePointY]);
+	private applyScale([scalePointX, scalePointY]: [number, number]): void {
+		this.container.transition().duration(300).call(this.zoomBehavior.scaleTo, this.scale, [scalePointX, scalePointY]);
+	}
+
+	private applyInitialTransform(): void {
+		const transform: ZoomTransform = zoomIdentity.translate(this.initialTranslate.x, this.initialTranslate.y).scale(this.initialScale);
+		this.container.transition().duration(300).call(this.zoomBehavior.transform, transform);
 	}
 
 	private calculateInitialScale(): number {
@@ -123,9 +128,8 @@ export class RadarChartRenderer {
 		const radarDiameter: number =
 			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config);
 		const transform: number = (this.size.width - (this.config.offsetLeft + this.config.offsetRight + this.scale * radarDiameter)) / 2;
-		const transformWithoutRightOffset: number = (this.size.width - (this.config.offsetLeft + this.scale * radarDiameter)) / 2;
 
-		return transform >= 0 ? transform : transformWithoutRightOffset;
+		return transform;
 	}
 
 	private initContainers(): void {

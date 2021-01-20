@@ -43,4 +43,8 @@ export class RadarChartModel {
 	public zoomOut(): void {
 		this.zoomOut$.next();
 	}
+
+	public zoomReset(): void {
+		this.zoomReset$.next();
+	}
 }
