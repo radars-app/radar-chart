@@ -4,7 +4,7 @@ import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { Size } from '../../models/size';
-import { select, zoom, ZoomBehavior, zoomIdentity, zoomTransform, ZoomTransform } from 'd3';
+import { select, zoom, zoomIdentity, ZoomTransform } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
 import { D3ZoomEvent } from '../../models/types/d3-zoom-event';
 import { DotsRenderer } from '../dots/dots.renderer';
