@@ -8,6 +8,7 @@ export class RadarChartConfig {
 	public offsetRight: number;
 	public marginLeftRight: number;
 	public marginTopBottom: number;
+	public zoomTransitionTime: number = 300;
 	public readonly ringsConfig: RingsConfig;
 	public readonly dividersConfig: DividersConfig;
 	public readonly dotsConfig: DotsConfig;

@@ -112,12 +112,15 @@ export class RadarChartRenderer {
 	}
 
 	private applyScale([scalePointX, scalePointY]: [number, number]): void {
-		this.container.transition().duration(300).call(this.zoomBehavior.scaleTo, this.scale, [scalePointX, scalePointY]);
+		this.container
+			.transition()
+			.duration(this.config.zoomTransitionTime)
+			.call(this.zoomBehavior.scaleTo, this.scale, [scalePointX, scalePointY]);
 	}
 
 	private applyInitialTransform(): void {
 		const transform: ZoomTransform = zoomIdentity.translate(this.initialTranslate.x, this.initialTranslate.y).scale(this.initialScale);
-		this.container.transition().duration(300).call(this.zoomBehavior.transform, transform);
+		this.container.transition().duration(this.config.zoomTransitionTime).call(this.zoomBehavior.transform, transform);
 	}
 
 	private calculateInitialScale(): number {
