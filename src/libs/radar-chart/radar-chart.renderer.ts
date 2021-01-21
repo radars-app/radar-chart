@@ -101,12 +101,14 @@ export class RadarChartRenderer {
 		});
 
 		this.scale = this.initialScale = this.calculateInitialScale();
+
+		const rightPanelCentering: number = this.config.offsetRight > 0 ? this.calculateCenteringTransformX() : 0;
 		this.initialTranslate = {
-			x: this.config.offsetLeft + this.config.marginLeftRight + this.calculateCenteringTransformX(),
-			y: this.config.marginTopBottom,
+			x: this.config.offsetLeft + rightPanelCentering + this.scale * this.config.marginLeftRight,
+			y: this.scale * this.config.marginTopBottom,
 		};
-		zoomBehavior.scaleTo(this.container, this.initialScale, [0, 0]);
-		zoomBehavior.translateBy(this.container, this.initialTranslate.x / this.initialScale, this.initialTranslate.y / this.initialScale);
+		const transform: ZoomTransform = zoomIdentity.translate(this.initialTranslate.x, this.initialTranslate.y).scale(this.scale);
+		zoomBehavior.transform(this.container, transform);
 
 		return zoomBehavior;
 	}
