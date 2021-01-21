@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, merge } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { D3Selection } from '../../models/types/d3-selection';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
