@@ -61,7 +61,10 @@ export class RadarChartRenderer {
 	private initBehavior(): void {
 		this.zoomBehavior = this.initZoomBehavior();
 
-		const scalePointX: number = (this.size.width - this.config.offsetLeft - this.config.offsetRight) / 2 + this.config.offsetLeft;
+		const scalePointX: number =
+			(this.size.width - this.config.offsetLeft - this.config.offsetRight) / 2 +
+			this.config.offsetLeft +
+			this.scale * this.config.marginLeftRight;
 		const scalePointY: number = this.size.height / 2;
 
 		this.model.zoomIn$.subscribe(() => {
