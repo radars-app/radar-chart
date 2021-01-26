@@ -4,4 +4,5 @@ export interface RadarDot {
 	sector: string;
 	ring: string;
 	number: number;
+	content: string;
 }

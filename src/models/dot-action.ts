@@ -1,4 +1,7 @@
+import { Cluster } from './cluster';
+import { RadarDot } from './radar-dot';
+
 export interface DotAction {
-	dotId: string;
+	items: RadarDot[];
 	target: Element;
 }
