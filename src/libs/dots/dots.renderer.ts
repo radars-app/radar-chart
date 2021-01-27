@@ -110,17 +110,18 @@ export class DotsRenderer {
 	private update(clusters: D3Selection): void {
 		const self: DotsRenderer = this;
 		clusters.each(function (cluster: Cluster): void {
+			const firstItem: RadarDot = cluster.items[0];
 			const container: D3Selection = select(this);
 			self.renderClusterContainer(container);
 
 			const circle: D3Selection = container.append('circle');
-			const dotColor: string = self.getColorBySectorName(cluster[0].sector);
+			const dotColor: string = self.getColorBySectorName(firstItem.sector);
 			self.renderCircle(circle, dotColor);
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
 				const number: D3Selection = container.append('text');
-				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${cluster.items[0].number}`;
+				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${firstItem.number}`;
 				self.renderNumber(number, dotsNumber);
 			}
 		});
@@ -142,7 +143,7 @@ export class DotsRenderer {
 	}
 
 	private isClusteredDot(cluster: Cluster): boolean {
-		return cluster.items.length > 1;
+		return cluster.items.length >= 2;
 	}
 
 	private renderCircle(container: D3Selection, color: string): void {
