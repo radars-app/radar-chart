@@ -8,7 +8,8 @@ export class ClickAction {
 	public applyTo(container: D3Selection): void {
 		const cluster: Cluster = container.datum();
 		const self: ClickAction = this;
-		container.on('click', function (): void {
+		container.on('click', function (event: MouseEvent): void {
+			event.stopPropagation();
 			self.model.dotClicked$.next({
 				items: cluster.items,
 				target: this,
