@@ -1,4 +1,3 @@
-import { select, selectAll } from 'd3';
 import { Cluster } from '../../../models/cluster';
 import { RadarDot } from '../../../models/radar-dot';
 import { D3Selection } from '../../../models/types/d3-selection';
