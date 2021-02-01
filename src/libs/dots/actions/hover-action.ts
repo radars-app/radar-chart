@@ -28,7 +28,7 @@ export class HoverAction extends DotAction {
 				container.classed(self.hoveredClassName, self.hoveredDataSet === cluster.items);
 			})
 			.on('mouseleave', function (): void {
-				const isFocusedCluster: Boolean = this.classList.contains('dot--clicked-cluster');
+				const isFocusedCluster: Boolean = this.classList.contains(this.clickedClusterClassName);
 				if (!isFocusedCluster) {
 					self.hoveredDataSet = undefined;
 					self.resetDotFocus();
