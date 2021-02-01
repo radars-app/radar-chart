@@ -1,15 +1,16 @@
-import { selectAll } from 'd3';
+import { select, selectAll } from 'd3';
 import { Cluster } from '../../../models/cluster';
 import { RadarDot } from '../../../models/radar-dot';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { RadarChartModel } from '../../radar-chart/radar-chart.model';
+import { DotAction } from './dot-action';
 
-export class HoverAction {
+export class HoverAction extends DotAction {
 	public hoveredDataSet: RadarDot[] = undefined;
-	public hoveredClassName: string = 'dot--hovered';
-	public blurredClassName: string = 'dot--blurred';
 
-	constructor(private model: RadarChartModel) {}
+	constructor(private model: RadarChartModel) {
+		super();
+	}
 
 	public applyTo(container: D3Selection): void {
 		const cluster: Cluster = container.datum();
@@ -17,20 +18,21 @@ export class HoverAction {
 
 		container
 			.on('mouseenter', function (): void {
+				const allDots: D3Selection = self.resetDotFocus();
 				self.hoveredDataSet = cluster.items;
 				self.model.dotHovered$.next({
 					items: cluster.items,
 					target: this,
 				});
-				const allDots: D3Selection = selectAll('g.dot');
 				allDots.classed(self.blurredClassName, true);
 				container.classed(self.hoveredClassName, self.hoveredDataSet === cluster.items);
 			})
 			.on('mouseleave', function (): void {
-				self.hoveredDataSet = undefined;
-				const allDots: D3Selection = selectAll('g.dot');
-				allDots.classed(self.hoveredClassName, false);
-				allDots.classed(self.blurredClassName, false);
+				const isFocusedCluster: Boolean = this.classList.contains('dot--clicked-cluster');
+				if (!isFocusedCluster) {
+					self.hoveredDataSet = undefined;
+					self.resetDotFocus();
+				}
 			});
 	}
 }
