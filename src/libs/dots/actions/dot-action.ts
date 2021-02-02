@@ -1,4 +1,3 @@
-import { selectAll } from 'd3';
 import { D3Selection } from '../../../models/types/d3-selection';
 
 export class DotAction {
@@ -7,12 +6,13 @@ export class DotAction {
 	protected focusedClusterClassName: string = 'dot--focused-cluster';
 	protected blurredClusterClassName: string = 'dot--blurred-cluster';
 
-	protected resetDotFocus(): D3Selection {
-		const allDots: D3Selection = selectAll('g.dot');
-		allDots.classed(this.hoveredClassName, false);
-		allDots.classed(this.blurredClassName, false);
-		allDots.classed(this.focusedClusterClassName, false);
-		allDots.classed(this.blurredClusterClassName, false);
-		return allDots;
+	protected resetDotHover(container: D3Selection): void {
+		container.classed(this.hoveredClassName, false);
+		container.classed(this.blurredClassName, false);
+	}
+
+	protected resetDotFocus(container: D3Selection): void {
+		container.classed(this.focusedClusterClassName, false);
+		container.classed(this.blurredClusterClassName, false);
 	}
 }
