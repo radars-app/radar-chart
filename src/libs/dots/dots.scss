@@ -15,6 +15,14 @@
 		opacity: 1;
 	}
 
+	&--blurred-cluster {
+		opacity: 0.6 !important;
+	}
+
+	&--focused-cluster {
+		opacity: 1 !important;
+	}
+
 	&__number {
 		user-select: none;
 		pointer-events: none;

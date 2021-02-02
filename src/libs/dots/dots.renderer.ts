@@ -134,7 +134,7 @@ export class DotsRenderer {
 	private renderClusterContainer(container: D3Selection): void {
 		container.classed('dot', true);
 
-		if (this.config.dotsConfig.hasHoverAction) {
+		if (this.config.dotsConfig.hasClickAction) {
 			this.clickAction.applyTo(container);
 		}
 		if (this.config.dotsConfig.hasHoverAction) {

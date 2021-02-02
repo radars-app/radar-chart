@@ -1,3 +1,4 @@
+import { selectAll } from 'd3';
 import { Cluster } from '../../../models/cluster';
 import { RadarDot } from '../../../models/radar-dot';
 import { D3Selection } from '../../../models/types/d3-selection';
@@ -5,8 +6,6 @@ import { RadarChartModel } from '../../radar-chart/radar-chart.model';
 import { DotAction } from './dot-action';
 
 export class HoverAction extends DotAction {
-	public hoveredDataSet: RadarDot[] = undefined;
-
 	constructor(private model: RadarChartModel) {
 		super();
 	}
@@ -18,20 +17,15 @@ export class HoverAction extends DotAction {
 		container
 			.on('mouseenter', function (): void {
 				const allDots: D3Selection = self.resetDotFocus();
-				self.hoveredDataSet = cluster.items;
 				self.model.dotHovered$.next({
 					items: cluster.items,
 					target: this,
 				});
+				container.classed(self.hoveredClassName, true);
 				allDots.classed(self.blurredClassName, true);
-				container.classed(self.hoveredClassName, self.hoveredDataSet === cluster.items);
 			})
 			.on('mouseleave', function (): void {
-				const isFocusedCluster: Boolean = this.classList.contains(self.clickedClusterClassName);
-				if (!isFocusedCluster) {
-					self.hoveredDataSet = undefined;
-					self.resetDotFocus();
-				}
+				self.resetDotFocus();
 			});
 	}
 }

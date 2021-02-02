@@ -19,12 +19,13 @@ export class ClickAction extends DotAction {
 				target: this,
 			});
 			if (cluster.items.length >= 2) {
-				select(this).classed(self.clickedClusterClassName, true);
+				const allDots: D3Selection = selectAll('g.dot');
+				allDots.classed(self.blurredClusterClassName, true);
+				container.classed(self.focusedClusterClassName, true);
 			}
 		});
 
 		select(window).on('click', function (event: MouseEvent): void {
-			select(self.clickedClusterClassName).classed(self.clickedClusterClassName, false);
 			self.resetDotFocus();
 		});
 	}
