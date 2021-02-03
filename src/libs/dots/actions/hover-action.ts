@@ -16,8 +16,10 @@ export class HoverAction extends ActionBase {
 		container
 			.on('mouseenter', function (): void {
 				const allDots: D3Selection = selectAll('g.dot');
-				self.resetDotHover(allDots);
-				self.resetDotFocus(allDots);
+				if (cluster.items.length === 1) {
+					self.resetDotHover(allDots);
+					self.resetDotFocus(allDots);
+				}
 				self.model.dotHovered$.next({
 					items: cluster.items,
 					target: this,
