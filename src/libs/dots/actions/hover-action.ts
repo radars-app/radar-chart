@@ -2,9 +2,9 @@ import { selectAll } from 'd3';
 import { Cluster } from '../../../models/cluster';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { RadarChartModel } from '../../radar-chart/radar-chart.model';
-import { DotAction } from './dot-action';
+import { ActionBase } from './action-base';
 
-export class HoverAction extends DotAction {
+export class HoverAction extends ActionBase {
 	constructor(private model: RadarChartModel) {
 		super();
 	}

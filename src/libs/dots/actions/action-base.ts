@@ -1,6 +1,6 @@
 import { D3Selection } from '../../../models/types/d3-selection';
 
-export class DotAction {
+export class ActionBase {
 	protected hoveredClassName: string = 'dot--hovered';
 	protected blurredClassName: string = 'dot--blurred';
 	protected focusedClusterClassName: string = 'dot--focused-cluster';
