@@ -25,7 +25,7 @@ export class ClickAction extends ActionBase {
 			}
 		});
 
-		select(window).on('click', function (event: MouseEvent): void {
+		select(window).on('click', function (): void {
 			const allDots: D3Selection = selectAll('g.dot');
 			self.resetDotFocus(allDots);
 		});
