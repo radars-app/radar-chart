@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, merge } from 'rxjs';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { D3Selection } from '../../models/types/d3-selection';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { RadarChartConfig } from '../radar-chart/radar-chart.config';
@@ -9,9 +9,14 @@ import { select } from 'd3';
 import { Sector } from '../../models/sector';
 import { ClickAction } from './actions/click-action';
 import { HoverAction } from './actions/hover-action';
+import { PossiblePoint } from '../../models/possible-point';
+import { ClustersService } from './services/clusters.service';
+import { Cluster } from '../../models/cluster';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
+	private clustersService: ClustersService;
+
 	private dotsContainer: D3Selection;
 
 	private radarDiameter: number;
@@ -25,6 +30,7 @@ export class DotsRenderer {
 
 	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
 		this.possiblePointsService = new PossiblePointsService(config$, model);
+		this.clustersService = new ClustersService();
 		this.radarDiameter =
 			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config$.getValue());
 		this.initContainers();
@@ -70,52 +76,53 @@ export class DotsRenderer {
 
 	private render(container: D3Selection, possiblePoints: Map<string, PossiblePoint[]>): void {
 		const dots: RadarDot[] = this.model.dots$.getValue();
+		const clusters: Cluster[] = this.clustersService.calculateClusters(dots, possiblePoints);
 
-		const dotsToUpdate: D3Selection = container.selectAll('g.dot').data(dots);
-		const dotsToEnter: D3Selection = dotsToUpdate.enter().append('g');
-		const dotsToExit: D3Selection = dotsToUpdate.exit();
+		const clustersToUpdate: D3Selection = container.selectAll('g.dot').data(clusters);
+		const clustersToEnter: D3Selection = clustersToUpdate.enter().append('g');
+		const clustersToExit: D3Selection = clustersToUpdate.exit();
 
-		this.update(dotsToUpdate, possiblePoints);
-		this.enter(dotsToEnter, possiblePoints);
-		this.exit(dotsToExit);
+		this.update(clustersToUpdate);
+		this.enter(clustersToEnter);
+		this.exit(clustersToExit);
 	}
 
-	private enter(dots: D3Selection, points: Map<string, PossiblePoint[]>): void {
+	private enter(clusters: D3Selection): void {
 		const self: DotsRenderer = this;
-		dots.each(function (dot: RadarDot): void {
+		clusters.each(function (cluster: Cluster): void {
+			const firstItem: RadarDot = cluster.items[0];
 			const container: D3Selection = select(this);
-			self.renderDotContainer(container);
+			self.renderClusterContainer(container);
 
 			const circle: D3Selection = container.append('circle');
-			const dotColor: string = self.getColorBySectorName(dot.sector);
+			const dotColor: string = self.getColorBySectorName(firstItem.sector);
 			self.renderCircle(circle, dotColor);
-
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.positionDot(container, point);
+			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
 				const number: D3Selection = container.append('text');
-				self.renderNumber(number, dot.number);
+				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${firstItem.number}`;
+				self.renderNumber(number, dotsNumber);
 			}
 		});
 	}
 
-	private update(dots: D3Selection, points: Map<string, PossiblePoint[]>): void {
+	private update(clusters: D3Selection): void {
 		const self: DotsRenderer = this;
-		dots.each(function (dot: RadarDot): void {
+		clusters.each(function (cluster: Cluster): void {
+			const firstItem: RadarDot = cluster.items[0];
 			const container: D3Selection = select(this);
-			self.renderDotContainer(container);
+			self.renderClusterContainer(container);
 
-			const circle: D3Selection = container.select('circle.dot__circle');
-			const dotColor: string = self.getColorBySectorName(dot.sector);
+			const circle: D3Selection = container.append('circle');
+			const dotColor: string = self.getColorBySectorName(firstItem.sector);
 			self.renderCircle(circle, dotColor);
-
-			const point: PossiblePoint = self.choosePoint(dot, points);
-			self.positionDot(container, point);
+			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
-				const number: D3Selection = container.select('text.dot__number');
-				self.renderNumber(number, dot.number);
+				const number: D3Selection = container.append('text');
+				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${firstItem.number}`;
+				self.renderNumber(number, dotsNumber);
 			}
 		});
 	}
@@ -124,10 +131,10 @@ export class DotsRenderer {
 		dots.remove();
 	}
 
-	private renderDotContainer(container: D3Selection): void {
+	private renderClusterContainer(container: D3Selection): void {
 		container.classed('dot', true);
 
-		if (this.config.dotsConfig.hasHoverAction) {
+		if (this.config.dotsConfig.hasClickAction) {
 			this.clickAction.applyTo(container);
 		}
 		if (this.config.dotsConfig.hasHoverAction) {
@@ -135,11 +142,15 @@ export class DotsRenderer {
 		}
 	}
 
+	private isClusteredDot(cluster: Cluster): boolean {
+		return cluster.items.length >= 2;
+	}
+
 	private renderCircle(container: D3Selection, color: string): void {
 		container.classed('dot__circle', true).attr('r', this.config.dotsConfig.dotRadius).attr('fill', color);
 	}
 
-	private renderNumber(container: D3Selection, number: number): void {
+	private renderNumber(container: D3Selection, number: string): void {
 		container
 			.classed('dot__number', true)
 			.attr('fill', '#FFFFFF')
@@ -149,48 +160,8 @@ export class DotsRenderer {
 			.text(number);
 	}
 
-	private positionDot(container: D3Selection, point: PossiblePoint): void {
-		container.attr('transform', `translate(${point.x}, ${point.y})`);
-	}
-
-	private choosePoint(dot: RadarDot, possiblePoints: Map<string, PossiblePoint[]>): PossiblePoint {
-		const sectorsPoints: PossiblePoint[] = possiblePoints.get(`${dot.ring}-${dot.sector}`);
-		const possiblePointsForDot: PossiblePoint[] = sectorsPoints.filter((point: PossiblePoint) => {
-			return !Boolean(point.isOccupied);
-		});
-		const pointsToAvoid: PossiblePoint[] = sectorsPoints.filter((point: PossiblePoint) => {
-			return point.isEdgePoint || point.isOccupied;
-		});
-
-		let candidatePoint: PossiblePoint = null;
-		let candidateDistance: number = 0;
-		possiblePointsForDot.forEach((possiblePoint: PossiblePoint, index: number) => {
-			let currentDistance: number = 300;
-			pointsToAvoid.forEach((pointToAvoid: PossiblePoint) => {
-				const diffX: number = pointToAvoid.x - possiblePoint.x;
-				const diffY: number = pointToAvoid.y - possiblePoint.y;
-				const lengthBetween: number = Math.sqrt(diffX ** 2 + diffY ** 2);
-				if (lengthBetween < currentDistance) {
-					currentDistance = lengthBetween;
-				}
-			});
-
-			if (currentDistance > candidateDistance) {
-				candidatePoint = possiblePointsForDot[index];
-				candidateDistance = currentDistance;
-			}
-		});
-
-		if (candidatePoint === null) {
-			candidatePoint = possiblePointsForDot[0];
-		}
-
-		if (candidatePoint === undefined) {
-			throw new Error('implement clusters');
-		}
-
-		candidatePoint.isOccupied = true;
-		return candidatePoint;
+	private positionCluster(container: D3Selection, cluster: Cluster): void {
+		container.attr('transform', `translate(${cluster.x}, ${cluster.y})`);
 	}
 
 	private getColorBySectorName(sectorName: string): string {

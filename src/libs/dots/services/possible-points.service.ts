@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { PossiblePoint } from '../../../models/possible-point';
 import { Sector } from '../../../models/sector';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { calculateOuterRingRadius } from '../../helpers/calculate-outer-ring-radius';
@@ -124,6 +125,7 @@ export class PossiblePointsService {
 				x: point.x,
 				y: point.y,
 				isEdgePoint: isEdgeTrack && (isFirstPoint || isLastPoint),
+				itemsQuantity: 0,
 			};
 			return possiblePoint;
 		});

@@ -1,35 +1,35 @@
 import { selectAll } from 'd3';
-import { RadarDot } from '../../../models/radar-dot';
+import { Cluster } from '../../../models/cluster';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { RadarChartModel } from '../../radar-chart/radar-chart.model';
+import { ActionBase } from './action-base';
 
-export class HoverAction {
-	public hoveredDotId: string = undefined;
-	public hoveredClassName: string = 'dot--hovered';
-	public blurredClassName: string = 'dot--blurred';
-
-	constructor(private model: RadarChartModel) {}
+export class HoverAction extends ActionBase {
+	constructor(private model: RadarChartModel) {
+		super();
+	}
 
 	public applyTo(container: D3Selection): void {
-		const dot: RadarDot = container.datum();
+		const cluster: Cluster = container.datum();
 		const self: HoverAction = this;
 
 		container
 			.on('mouseenter', function (): void {
-				self.hoveredDotId = dot.id;
+				const allDots: D3Selection = selectAll('g.dot');
+				if (cluster.items.length === 1) {
+					self.resetDotHover(allDots);
+					self.resetDotFocus(allDots);
+				}
 				self.model.dotHovered$.next({
-					dotId: dot.id,
+					items: cluster.items,
 					target: this,
 				});
-				const allDots: D3Selection = selectAll('g.dot');
+				container.classed(self.hoveredClassName, true);
 				allDots.classed(self.blurredClassName, true);
-				container.classed(self.hoveredClassName, self.hoveredDotId === dot.id);
 			})
 			.on('mouseleave', function (): void {
-				self.hoveredDotId = undefined;
 				const allDots: D3Selection = selectAll('g.dot');
-				allDots.classed(self.hoveredClassName, false);
-				allDots.classed(self.blurredClassName, false);
+				self.resetDotHover(allDots);
 			});
 	}
 }

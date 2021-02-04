@@ -5,6 +5,7 @@
 .dot {
 	opacity: 0.8;
 	transition: opacity 0.2s linear;
+	outline: none;
 
 	&--blurred {
 		opacity: 0.6;
@@ -12,6 +13,14 @@
 
 	&--hovered {
 		opacity: 1;
+	}
+
+	&--blurred-cluster {
+		opacity: 0.6 !important;
+	}
+
+	&--focused-cluster {
+		opacity: 1 !important;
 	}
 
 	&__number {

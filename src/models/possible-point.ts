@@ -1,6 +1,6 @@
-interface PossiblePoint {
+export interface PossiblePoint {
 	x: number;
 	y: number;
 	isEdgePoint: boolean;
-	isOccupied?: boolean;
+	itemsQuantity: number;
 }
