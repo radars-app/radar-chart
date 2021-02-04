@@ -4,9 +4,11 @@ export class DotsConfig {
 
 	public dotOffset: number;
 	public dotRadius: number;
+	public clusterRadius: number;
 
 	public isNumberShown: boolean;
 	public numberFontSize: number;
+	public clusterNumberFontSize: number;
 	public numberFontFamily: string;
 
 	public get dotDiameterWithOffsets(): number {
@@ -16,10 +18,12 @@ export class DotsConfig {
 	constructor() {
 		this.dotOffset = 3;
 		this.dotRadius = 7;
+		this.clusterRadius = 8;
 		this.hasClickAction = true;
 		this.hasHoverAction = true;
 		this.isNumberShown = true;
 		this.numberFontFamily = 'Roboto, sans-serif';
 		this.numberFontSize = 7;
+		this.clusterNumberFontSize = 8;
 	}
 }
