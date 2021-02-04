@@ -96,13 +96,13 @@ export class DotsRenderer {
 
 			const circle: D3Selection = container.append('circle');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
-			self.renderCircle(circle, dotColor);
+			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster));
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
 				const number: D3Selection = container.append('text');
 				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${firstItem.number}`;
-				self.renderNumber(number, dotsNumber);
+				self.renderNumber(number, dotsNumber, self.isClusteredDot(cluster));
 			}
 		});
 	}
@@ -116,13 +116,13 @@ export class DotsRenderer {
 
 			const circle: D3Selection = container.append('circle');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
-			self.renderCircle(circle, dotColor);
+			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster));
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
 				const number: D3Selection = container.append('text');
 				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${firstItem.number}`;
-				self.renderNumber(number, dotsNumber);
+				self.renderNumber(number, dotsNumber, self.isClusteredDot(cluster));
 			}
 		});
 	}
@@ -146,16 +146,23 @@ export class DotsRenderer {
 		return cluster.items.length >= 2;
 	}
 
-	private renderCircle(container: D3Selection, color: string): void {
-		container.classed('dot__circle', true).attr('r', this.config.dotsConfig.dotRadius).attr('fill', color);
+	private renderCircle(container: D3Selection, color: string, isClusteredDot: boolean): void {
+		container
+			.classed('dot__circle', true)
+			.attr('r', () => {
+				return isClusteredDot ? this.config.dotsConfig.clusterRadius : this.config.dotsConfig.dotRadius;
+			})
+			.attr('fill', color);
 	}
 
-	private renderNumber(container: D3Selection, number: string): void {
+	private renderNumber(container: D3Selection, number: string, isClusteredDot: boolean): void {
 		container
 			.classed('dot__number', true)
 			.attr('fill', '#FFFFFF')
 			.attr('font-family', this.config.dotsConfig.numberFontFamily)
-			.attr('font-size', this.config.dotsConfig.numberFontSize)
+			.attr('font-size', () => {
+				return isClusteredDot ? this.config.dotsConfig.clusterNumberFontSize : this.config.dotsConfig.numberFontSize;
+			})
 			.attr('dominant-baseline', 'central')
 			.text(number);
 	}
