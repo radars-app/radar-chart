@@ -8,6 +8,7 @@ import { LabelsRenderer } from './labels/labels.renderer';
 import { calculateOuterRingRadius } from '../helpers/calculate-outer-ring-radius';
 import { select } from 'd3';
 import { Sector } from '../../models/sector';
+import { appendNodeIfNotExist } from '../helpers/append-node-if-not-exists';
 
 export class DividersRenderer {
 	private labelsRenderer: LabelsRenderer;
@@ -105,18 +106,9 @@ export class DividersRenderer {
 	private renderLabels(container: D3Selection, range: number): void {
 		if (this.config.ringsConfig.labelsConfig.isLabelShown) {
 			const ringNamesToRender: string[] = container.datum().isLabeled ? this.model.ringNames$.getValue() : [];
-			const backgroundContainer: D3Selection = this.appendContainerIfNotExist(container, 'divider__labels-background');
-			const textContainer: D3Selection = this.appendContainerIfNotExist(container, 'divider__labels');
+			const backgroundContainer: D3Selection = appendNodeIfNotExist(container, 'divider__labels-background');
+			const textContainer: D3Selection = appendNodeIfNotExist(container, 'divider__labels');
 			this.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
-		}
-	}
-
-	private appendContainerIfNotExist(container: D3Selection, className: string): D3Selection {
-		const existingContainer: D3Selection = container.select(`g.${className}`);
-		if (Boolean(existingContainer.nodes().length)) {
-			return existingContainer;
-		} else {
-			return container.append('g').classed(className, true);
 		}
 	}
 }
