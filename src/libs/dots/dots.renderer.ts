@@ -12,6 +12,7 @@ import { HoverAction } from './actions/hover-action';
 import { PossiblePoint } from '../../models/possible-point';
 import { ClustersService } from './services/clusters.service';
 import { Cluster } from '../../models/cluster';
+import { appendNodeIfNotExist } from '../helpers/append-node-if-not-exists';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -101,8 +102,16 @@ export class DotsRenderer {
 
 			if (self.config.dotsConfig.isNumberShown) {
 				const number: D3Selection = container.append('text');
-				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${firstItem.number}`;
-				self.renderNumber(number, dotsNumber, self.isClusteredDot(cluster));
+				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}` : `${firstItem.number}`;
+				const isClustered: boolean = self.isClusteredDot(cluster);
+				self.renderNumber(number, dotsNumber, isClustered);
+
+				const star: D3Selection = appendNodeIfNotExist(container, 'dot__star', 'text');
+				if (isClustered) {
+					self.renderStar(star);
+				} else {
+					star.remove();
+				}
 			}
 		});
 	}
@@ -114,15 +123,23 @@ export class DotsRenderer {
 			const container: D3Selection = select(this);
 			self.renderClusterContainer(container);
 
-			const circle: D3Selection = container.append('circle');
+			const circle: D3Selection = container.select('circle.dot__circle');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
 			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster));
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
-				const number: D3Selection = container.append('text');
-				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}*` : `${firstItem.number}`;
-				self.renderNumber(number, dotsNumber, self.isClusteredDot(cluster));
+				const number: D3Selection = container.select('text.dot__number');
+				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}` : `${firstItem.number}`;
+				const isClustered: boolean = self.isClusteredDot(cluster);
+				self.renderNumber(number, dotsNumber, isClustered);
+
+				const star: D3Selection = appendNodeIfNotExist(container, 'dot__star', 'text');
+				if (isClustered) {
+					self.renderStar(star);
+				} else {
+					star.remove();
+				}
 			}
 		});
 	}
@@ -146,6 +163,20 @@ export class DotsRenderer {
 		return cluster.items.length >= 2;
 	}
 
+	private renderStar(container: D3Selection): void {
+		container
+			.classed('dot__star', true)
+			.attr('font-size', this.config.dotsConfig.starFontSize)
+			.attr('fill', '#FFFFFF')
+			.attr('font-family', this.config.dotsConfig.numberFontFamily)
+			.attr('style', () => {
+				return `transform: rotate(-90deg) translate(-${this.config.dotsConfig.clusterRadius / 2 + 1}px, ${
+					this.config.dotsConfig.clusterRadius / 2 + 1
+				}px);`;
+			})
+			.text('*');
+	}
+
 	private renderCircle(container: D3Selection, color: string, isClusteredDot: boolean): void {
 		container
 			.classed('dot__circle', true)
@@ -164,7 +195,18 @@ export class DotsRenderer {
 				return isClusteredDot ? this.config.dotsConfig.clusterNumberFontSize : this.config.dotsConfig.numberFontSize;
 			})
 			.attr('dominant-baseline', 'central')
-			.text(number);
+			.attr('style', () => {
+				return isClusteredDot
+					? `transform: rotate(-90deg) translate(2px, ${this.config.dotsConfig.clusterRadius / 2 - 1}px);`
+					: 'transform: rotate(-90deg);';
+			})
+			.text(() => {
+				if (isClusteredDot) {
+					return Boolean(number) && parseInt(number, 10) <= 99 ? number : '...';
+				} else {
+					return number;
+				}
+			});
 	}
 
 	private positionCluster(container: D3Selection, cluster: Cluster): void {

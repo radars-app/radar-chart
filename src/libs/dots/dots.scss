@@ -29,4 +29,10 @@
 		text-anchor: middle;
 		transform: rotate(-90deg);
 	}
+
+	&__star {
+		user-select: none;
+		pointer-events: none;
+		transform: rotate(-90deg);
+	}
 }
