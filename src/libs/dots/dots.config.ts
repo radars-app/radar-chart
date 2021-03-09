@@ -16,6 +16,10 @@ export class DotsConfig {
 		return 2 * this.dotOffset + 2 * this.dotRadius;
 	}
 
+	public get dotDiameterForStatusIcon(): number {
+		return (this.dotRadius + 2) * 2;
+	}
+
 	constructor() {
 		this.starFontSize = 14;
 		this.dotOffset = 3;

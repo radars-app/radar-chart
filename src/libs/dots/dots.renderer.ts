@@ -13,10 +13,13 @@ import { PossiblePoint } from '../../models/possible-point';
 import { ClustersService } from './services/clusters.service';
 import { Cluster } from '../../models/cluster';
 import { appendNodeIfNotExist } from '../helpers/append-node-if-not-exists';
+import { DotStateIconService } from './services/dot-state-icon.service';
+import { DotStatus } from '../../models/dot-status';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
 	private clustersService: ClustersService;
+	private dotStateIconService: DotStateIconService;
 
 	private dotsContainer: D3Selection;
 
@@ -31,11 +34,13 @@ export class DotsRenderer {
 
 	constructor(private container: D3Selection, private model: RadarChartModel, private config$: BehaviorSubject<RadarChartConfig>) {
 		this.possiblePointsService = new PossiblePointsService(config$, model);
+		this.dotStateIconService = new DotStateIconService();
 		this.clustersService = new ClustersService();
 		this.radarDiameter =
 			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config$.getValue());
 		this.initContainers();
 		this.initBehavior();
+		this.initIcons(container);
 	}
 
 	private initBehavior(): void {
@@ -67,6 +72,13 @@ export class DotsRenderer {
 		this.dotsContainer = this.container.attr('transform', `translate(${this.radarDiameter}, 0) rotate(90)`);
 	}
 
+	private initIcons(container: D3Selection): void {
+		const hiddenContainer: D3Selection = container.append('g').style('display', 'none');
+
+		this.dotStateIconService.renderDotMovedIcon(hiddenContainer.append('g'));
+		this.dotStateIconService.renderDotUpdatedIcon(hiddenContainer.append('g'));
+	}
+
 	private isDotsValid(ringNames: string[], sectors: Sector[], dots: RadarDot[]): boolean {
 		const isRingsValid: boolean = dots.every((dot: RadarDot) => ringNames.find((ringName: string) => ringName === dot.ring));
 		const isDotsValid: boolean =
@@ -95,9 +107,9 @@ export class DotsRenderer {
 			const container: D3Selection = select(this);
 			self.renderClusterContainer(container);
 
-			const circle: D3Selection = container.append('circle');
+			const circle: D3Selection = container.append('g');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
-			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster));
+			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster), firstItem.status);
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
@@ -123,9 +135,9 @@ export class DotsRenderer {
 			const container: D3Selection = select(this);
 			self.renderClusterContainer(container);
 
-			const circle: D3Selection = container.select('circle.dot__circle');
+			const circle: D3Selection = container.select('.dot__circle');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
-			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster));
+			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster), firstItem.status);
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
@@ -177,13 +189,35 @@ export class DotsRenderer {
 			.text('*');
 	}
 
-	private renderCircle(container: D3Selection, color: string, isClusteredDot: boolean): void {
-		container
-			.classed('dot__circle', true)
-			.attr('r', () => {
-				return isClusteredDot ? this.config.dotsConfig.clusterRadius : this.config.dotsConfig.dotRadius;
-			})
-			.attr('fill', color);
+	private renderCircle(container: D3Selection, color: string, isClusteredDot: boolean, status: DotStatus): void {
+		container.selectAll('*').remove();
+		if (isClusteredDot) {
+			container.append('circle').classed('dot__circle', true).attr('r', this.config.dotsConfig.clusterRadius).attr('fill', color);
+		} else {
+			if (status === DotStatus.NoChanges) {
+				container.append('circle').classed('dot__circle', true).attr('r', this.config.dotsConfig.dotRadius).attr('fill', color);
+			}
+
+			if (status === DotStatus.Updated) {
+				this.dotStateIconService
+					.renderDotUpdatedIcon(container)
+					.attr('transform', `translate(-${this.config.dotsConfig.dotRadius + 2}, -${this.config.dotsConfig.dotRadius + 2})`)
+					.select('svg')
+					.attr('width', this.config.dotsConfig.dotDiameterForStatusIcon)
+					.attr('height', this.config.dotsConfig.dotDiameterForStatusIcon)
+					.attr('fill', color);
+			}
+
+			if (status === DotStatus.Moved) {
+				this.dotStateIconService
+					.renderDotMovedIcon(container)
+					.attr('transform', `translate(-${this.config.dotsConfig.dotRadius + 2}, -${this.config.dotsConfig.dotRadius + 2})`)
+					.select('svg')
+					.attr('width', this.config.dotsConfig.dotDiameterForStatusIcon)
+					.attr('height', this.config.dotsConfig.dotDiameterForStatusIcon)
+					.attr('fill', color);
+			}
+		}
 	}
 
 	private renderNumber(container: D3Selection, number: string, isClusteredDot: boolean): void {

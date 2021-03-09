@@ -1,3 +1,5 @@
+import { DotStatus } from './dot-status';
+
 export interface RadarDot {
 	id: string;
 	name: string;
@@ -5,4 +7,5 @@ export interface RadarDot {
 	ring: string;
 	number: number;
 	content: string;
+	status: DotStatus;
 }
