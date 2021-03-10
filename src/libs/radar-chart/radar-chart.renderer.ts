@@ -3,6 +3,7 @@ import { RadarChartConfig } from './radar-chart.config';
 import { RadarChartModel } from './radar-chart.model';
 import { RingsRenderer } from '../rings/rings.renderer';
 import { BehaviorSubject, combineLatest } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { Size } from '../../models/size';
 import { select, zoom, zoomIdentity, ZoomTransform } from 'd3';
 import { DividersRenderer } from '../dividers/dividers.renderer';
@@ -79,6 +80,7 @@ export class RadarChartRenderer {
 
 		this.model.zoomReset$.subscribe(() => {
 			this.scale = this.initialScale;
+			this.calculateInitialTranslate();
 			this.applyInitialTransform();
 		});
 
@@ -88,6 +90,11 @@ export class RadarChartRenderer {
 			} else {
 				this.container.on('.zoom', null);
 			}
+		});
+
+		this.size$.pipe(debounceTime(150)).subscribe(() => {
+			this.calculateInitialTranslate();
+			this.applyInitialTransform();
 		});
 
 		combineLatest([this.config$, this.size$]).subscribe(() => {
@@ -105,15 +112,19 @@ export class RadarChartRenderer {
 
 		this.scale = this.initialScale = this.calculateInitialScale();
 
+		this.calculateInitialTranslate();
+		const transform: ZoomTransform = zoomIdentity.translate(this.initialTranslate.x, this.initialTranslate.y).scale(this.scale);
+		zoomBehavior.transform(this.container, transform);
+
+		return zoomBehavior;
+	}
+
+	private calculateInitialTranslate(): void {
 		const rightPanelCentering: number = this.config.offsetRight > 0 ? this.calculateCenteringTransformX() : 0;
 		this.initialTranslate = {
 			x: this.config.offsetLeft + rightPanelCentering + this.scale * this.config.marginLeftRight,
 			y: this.scale * this.config.marginTopBottom,
 		};
-		const transform: ZoomTransform = zoomIdentity.translate(this.initialTranslate.x, this.initialTranslate.y).scale(this.scale);
-		zoomBehavior.transform(this.container, transform);
-
-		return zoomBehavior;
 	}
 
 	private applyScale([scalePointX, scalePointY]: [number, number]): void {
