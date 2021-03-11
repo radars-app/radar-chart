@@ -135,7 +135,7 @@ export class DotsRenderer {
 			const container: D3Selection = select(this);
 			self.renderClusterContainer(container);
 
-			const circle: D3Selection = container.select('.dot__circle');
+			const circle: D3Selection = container.select('g.dot__circle');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
 			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster), firstItem.status);
 			self.positionCluster(container, cluster);
@@ -191,11 +191,13 @@ export class DotsRenderer {
 
 	private renderCircle(container: D3Selection, color: string, isClusteredDot: boolean, status: DotStatus): void {
 		container.selectAll('*').remove();
+		container.classed('dot__circle', true);
+
 		if (isClusteredDot) {
-			container.append('circle').classed('dot__circle', true).attr('r', this.config.dotsConfig.clusterRadius).attr('fill', color);
+			container.append('circle').attr('r', this.config.dotsConfig.clusterRadius).attr('fill', color);
 		} else {
 			if (status === DotStatus.NoChanges) {
-				container.append('circle').classed('dot__circle', true).attr('r', this.config.dotsConfig.dotRadius).attr('fill', color);
+				container.append('circle').attr('r', this.config.dotsConfig.dotRadius).attr('fill', color);
 			}
 
 			if (status === DotStatus.Updated) {
