@@ -175,7 +175,7 @@ export class DotsRenderer {
 	}
 
 	private isClusteredDot(cluster: Cluster): boolean {
-		return cluster.items.length >= 2;
+		return cluster.items.length > 1;
 	}
 
 	private renderStar(container: D3Selection): void {
