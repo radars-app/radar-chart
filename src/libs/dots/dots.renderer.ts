@@ -48,7 +48,7 @@ export class DotsRenderer {
 	private initBehavior(): void {
 		this.hoverAction = new HoverAction(this.model);
 		this.clickAction = new ClickAction(this.model);
-		this.highlightByIdAction = new HighlightDotAction(this.model);
+		this.highlightByIdAction = new HighlightDotAction(this.model, this.container);
 
 		combineLatest([
 			this.model.rangeX$,
