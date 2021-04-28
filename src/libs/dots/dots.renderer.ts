@@ -15,6 +15,7 @@ import { Cluster } from '../../models/cluster';
 import { appendNodeIfNotExist } from '../helpers/append-node-if-not-exists';
 import { DotStateIconService } from './services/dot-state-icon.service';
 import { DotStatus } from '../../models/dot-status';
+import { HighlightDotAction } from './actions/highlight-dot-action';
 
 export class DotsRenderer {
 	private possiblePointsService: PossiblePointsService;
@@ -27,6 +28,7 @@ export class DotsRenderer {
 
 	private clickAction: ClickAction;
 	private hoverAction: HoverAction;
+	private highlightByIdAction: HighlightDotAction;
 
 	private get config(): RadarChartConfig {
 		return this.config$.getValue();
@@ -46,6 +48,7 @@ export class DotsRenderer {
 	private initBehavior(): void {
 		this.hoverAction = new HoverAction(this.model);
 		this.clickAction = new ClickAction(this.model);
+		this.highlightByIdAction = new HighlightDotAction(this.model, this.dotsContainer);
 
 		combineLatest([
 			this.model.rangeX$,

@@ -20,6 +20,7 @@ export class RadarChartModel {
 	public readonly zoomReset$: Subject<void>;
 	public readonly zoomed$: Subject<void>;
 	public readonly isZoomEnabled: BehaviorSubject<boolean>;
+	public readonly highlightDot$: BehaviorSubject<string>;
 
 	constructor() {
 		this.rangeX$ = new BehaviorSubject(1366);
@@ -34,6 +35,7 @@ export class RadarChartModel {
 		this.zoomReset$ = new Subject();
 		this.zoomed$ = new Subject();
 		this.isZoomEnabled = new BehaviorSubject(true);
+		this.highlightDot$ = new BehaviorSubject('');
 	}
 
 	public zoomIn(): void {
@@ -46,5 +48,9 @@ export class RadarChartModel {
 
 	public zoomReset(): void {
 		this.zoomReset$.next();
+	}
+
+	public highlightDot(dotId: string): void {
+		this.highlightDot$.next(dotId);
 	}
 }
