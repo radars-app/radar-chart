@@ -2,7 +2,7 @@ import { D3Selection } from '../../../models/types/d3-selection';
 
 export class DotStateIconService {
 	public renderDotMovedIcon(container: D3Selection): D3Selection {
-		return container.html(`
+		return container.append('g').html(`
 			<svg version="1.1" id="dot-moved-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 				viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve" transform="translate(-8, -8)">
 			<style type="text/css">
@@ -23,7 +23,7 @@ export class DotStateIconService {
 	}
 
 	public renderDotUpdatedIcon(container: D3Selection): D3Selection {
-		return container.html(`
+		return container.append('g').html(`
 			<svg version="1.1" id="dot-updated-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 				viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
 			<style type="text/css">
