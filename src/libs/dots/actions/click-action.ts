@@ -1,4 +1,3 @@
-import { selectAll } from 'd3';
 import { Cluster } from '../../../models/cluster';
 import { D3Selection } from '../../../models/types/d3-selection';
 import { RadarChartModel } from '../../radar-chart/radar-chart.model';
@@ -18,20 +17,6 @@ export class ClickAction extends ActionBase {
 				items: cluster.items,
 				target: this,
 			});
-			if (cluster.items.length >= 2) {
-				const allDots: D3Selection = selectAll('g.dot');
-				allDots.classed(self.blurredClusterClassName, true);
-				container.classed(self.focusedClusterClassName, true);
-			}
 		});
-
-		window.addEventListener(
-			'click',
-			function (): void {
-				const allDots: D3Selection = selectAll('g.dot');
-				self.resetDotFocus(allDots);
-			},
-			true
-		);
 	}
 }
