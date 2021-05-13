@@ -11,7 +11,7 @@ export class ClickAction extends ActionBase {
 	public applyTo(container: D3Selection): void {
 		const cluster: Cluster = container.datum();
 		const self: ClickAction = this;
-		container.on('click,click-action', null);
+		container.on('click.click-action', null);
 		container.on('click.click-action', function (event: MouseEvent): void {
 			event.stopPropagation();
 			self.model.dotClicked$.next({
