@@ -116,10 +116,17 @@ export class DotsRenderer {
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
-				const number: D3Selection = container.append('text');
-				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}` : `${firstItem.number}`;
+				const numberContainer: D3Selection = container.append('text');
 				const isClustered: boolean = self.isClusteredDot(cluster);
-				self.renderNumber(number, dotsNumber, isClustered);
+				let dotsNumber: string;
+
+				if (isClustered) {
+					dotsNumber = `${cluster.items.length}`;
+				} else {
+					dotsNumber = firstItem.status === DotStatus.Expired ? '' : `${firstItem.number}`;
+				}
+
+				self.renderNumber(numberContainer, dotsNumber, isClustered);
 
 				const star: D3Selection = appendNodeIfNotExist(container, 'dot__star', 'text');
 				if (isClustered) {
@@ -144,10 +151,17 @@ export class DotsRenderer {
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
-				const number: D3Selection = container.select('text.dot__number');
-				const dotsNumber: string = self.isClusteredDot(cluster) ? `${cluster.items.length}` : `${firstItem.number}`;
+				const numberContainer: D3Selection = container.select('text.dot__number');
 				const isClustered: boolean = self.isClusteredDot(cluster);
-				self.renderNumber(number, dotsNumber, isClustered);
+				let dotsNumber: string;
+
+				if (isClustered) {
+					dotsNumber = `${cluster.items.length}`;
+				} else {
+					dotsNumber = firstItem.status === DotStatus.Expired ? '' : `${firstItem.number}`;
+				}
+
+				self.renderNumber(numberContainer, dotsNumber, isClustered);
 
 				const star: D3Selection = appendNodeIfNotExist(container, 'dot__star', 'text');
 				if (isClustered) {
@@ -221,6 +235,10 @@ export class DotsRenderer {
 					.attr('width', this.config.dotsConfig.dotDiameterForStatusIcon)
 					.attr('height', this.config.dotsConfig.dotDiameterForStatusIcon)
 					.attr('fill', color);
+			}
+
+			if (status === DotStatus.Expired) {
+				container.append('circle').attr('r', this.config.dotsConfig.dotRadius).attr('fill', color).attr('fill-opacity', 0.3);
 			}
 		}
 	}
