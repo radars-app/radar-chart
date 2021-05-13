@@ -13,8 +13,11 @@ export class HoverAction extends ActionBase {
 		const cluster: Cluster = container.datum();
 		const self: HoverAction = this;
 
+		container.on('mouseenter.hover-action', null);
+		container.on('mouseleave.hover-action', null);
+
 		container
-			.on('mouseenter', function (): void {
+			.on('mouseenter.hover-action', function (): void {
 				const allDots: D3Selection = selectAll('g.dot');
 				if (cluster.items.length === 1) {
 					self.resetDotHover(allDots);
@@ -27,7 +30,7 @@ export class HoverAction extends ActionBase {
 				container.classed(self.hoveredClassName, true);
 				allDots.classed(self.blurredClassName, true);
 			})
-			.on('mouseleave', function (): void {
+			.on('mouseleave.hover-action', function (): void {
 				const allDots: D3Selection = selectAll('g.dot');
 				self.resetDotHover(allDots);
 			});
