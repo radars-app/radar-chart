@@ -112,12 +112,13 @@ export class DotsRenderer {
 
 			const circle: D3Selection = container.append('g');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
-			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster), firstItem.status);
+			const isClustered: boolean = self.isClusteredDot(cluster);
+			const isClusterOutdated: boolean = self.isClusterOutdated(cluster);
+			self.renderCircle(circle, dotColor, isClustered, firstItem.status, isClusterOutdated);
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
 				const numberContainer: D3Selection = container.append('text');
-				const isClustered: boolean = self.isClusteredDot(cluster);
 				let dotsNumber: string;
 
 				if (isClustered) {
@@ -147,12 +148,13 @@ export class DotsRenderer {
 
 			const circle: D3Selection = container.select('g.dot__circle');
 			const dotColor: string = self.getColorBySectorName(firstItem.sector);
-			self.renderCircle(circle, dotColor, self.isClusteredDot(cluster), firstItem.status);
+			const isClustered: boolean = self.isClusteredDot(cluster);
+			const isClusterOutdated: boolean = self.isClusterOutdated(cluster);
+			self.renderCircle(circle, dotColor, isClustered, firstItem.status, isClusterOutdated);
 			self.positionCluster(container, cluster);
 
 			if (self.config.dotsConfig.isNumberShown) {
 				const numberContainer: D3Selection = container.select('text.dot__number');
-				const isClustered: boolean = self.isClusteredDot(cluster);
 				let dotsNumber: string;
 
 				if (isClustered) {
@@ -192,6 +194,10 @@ export class DotsRenderer {
 		return cluster.items.length > 1;
 	}
 
+	private isClusterOutdated(cluster: Cluster): boolean {
+		return cluster.items.every((item: RadarDot) => item.status === DotStatus.Expired);
+	}
+
 	private renderStar(container: D3Selection): void {
 		container
 			.classed('dot__star', true)
@@ -206,12 +212,22 @@ export class DotsRenderer {
 			.text('*');
 	}
 
-	private renderCircle(container: D3Selection, color: string, isClusteredDot: boolean, status: DotStatus): void {
+	private renderCircle(
+		container: D3Selection,
+		color: string,
+		isClusteredDot: boolean,
+		status: DotStatus,
+		isClusterOutdated: boolean
+	): void {
 		container.selectAll('*').remove();
 		container.classed('dot__circle', true);
 
 		if (isClusteredDot) {
-			container.append('circle').attr('r', this.config.dotsConfig.clusterRadius).attr('fill', color);
+			if (isClusterOutdated) {
+				container.append('circle').attr('r', this.config.dotsConfig.clusterRadius).attr('fill', color).attr('fill-opacity', 0.3);
+			} else {
+				container.append('circle').attr('r', this.config.dotsConfig.clusterRadius).attr('fill', color);
+			}
 		} else {
 			if (status === DotStatus.NoChanges) {
 				container.append('circle').attr('r', this.config.dotsConfig.dotRadius).attr('fill', color);
