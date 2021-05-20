@@ -45,6 +45,10 @@ export class RadarChartRenderer {
 		return this.config$.getValue();
 	}
 
+	private get radarDiameter(): number {
+		return calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config) * 2;
+	}
+
 	private get size(): Size {
 		return this.size$.getValue();
 	}
@@ -123,7 +127,7 @@ export class RadarChartRenderer {
 		const rightPanelCentering: number = this.config.offsetRight > 0 ? this.calculateCenteringTransformX() : 0;
 		this.initialTranslate = {
 			x: this.config.offsetLeft + rightPanelCentering + this.scale * this.config.marginLeftRight,
-			y: this.scale * this.config.marginTopBottom,
+			y: (this.size.height - this.scale * this.radarDiameter) / 2,
 		};
 	}
 
@@ -144,11 +148,7 @@ export class RadarChartRenderer {
 	}
 
 	private calculateCenteringTransformX(): number {
-		const radarDiameter: number =
-			2 * calculateOuterRingRadius(this.model.rangeX$.getValue(), this.model.rangeY$.getValue(), this.config);
-		const transform: number = (this.size.width - (this.config.offsetLeft + this.config.offsetRight + this.scale * radarDiameter)) / 2;
-
-		return transform;
+		return (this.size.width - (this.config.offsetLeft + this.config.offsetRight + this.scale * this.radarDiameter)) / 2;
 	}
 
 	private initContainers(): void {
