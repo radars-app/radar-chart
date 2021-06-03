@@ -205,7 +205,7 @@ export class DotsRenderer {
 			.attr('fill', '#FFFFFF')
 			.attr('font-family', this.config.dotsConfig.numberFontFamily)
 			.attr('style', () => {
-				return `transform: rotate(-90deg) translate(-${this.config.dotsConfig.clusterRadius / 2 + 1}px, ${
+				return `transform: rotate(-90deg) translateZ(0) translate(-${this.config.dotsConfig.clusterRadius / 2 + 1}px, ${
 					this.config.dotsConfig.clusterRadius / 2 + 1
 				}px);`;
 			})
@@ -270,8 +270,8 @@ export class DotsRenderer {
 			.attr('dominant-baseline', 'central')
 			.attr('style', () => {
 				return isClusteredDot
-					? `transform: rotate(-90deg) translate(2px, ${this.config.dotsConfig.clusterRadius / 2 - 1}px);`
-					: 'transform: rotate(-90deg);';
+					? `transform: rotate(-90deg) translateZ(0) translate(2px, ${this.config.dotsConfig.clusterRadius / 2 - 1}px);`
+					: 'transform: rotate(-90deg) translateZ(0);';
 			})
 			.text(() => {
 				if (isClusteredDot) {
