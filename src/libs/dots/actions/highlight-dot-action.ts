@@ -3,9 +3,10 @@ import { ActionBase } from './action-base';
 import { RadarChartModel } from '../../radar-chart/radar-chart.model';
 import { Cluster } from '../../../models/cluster';
 import { RadarDot } from '../../../models/radar-dot';
+import { DotsConfig } from '../dots.config';
 
 export class HighlightDotAction extends ActionBase {
-	constructor(private model: RadarChartModel, private container: D3Selection) {
+	constructor(private model: RadarChartModel, private container: D3Selection, private dotsConfig: DotsConfig) {
 		super();
 		this.model.highlightDot$.subscribe((itemId: string) => {
 			this.highlightDot(itemId);
@@ -28,9 +29,13 @@ export class HighlightDotAction extends ActionBase {
 				return isDotInCurrentCluster;
 			});
 			dotForHighlight.classed(self.hoveredClassName, true);
-			allDots.classed(self.blurredClassName, true);
+			if (dotForHighlight.classed('dot--cluster')) {
+				dotForHighlight.select('circle').attr('r', self.dotsConfig.clusterRadius + 1);
+			} else {
+				dotForHighlight.select('circle').attr('r', self.dotsConfig.dotRadius + 1);
+			}
 		} else {
-			self.resetDotHover(allDots);
+			self.resetDotHover(allDots, self.dotsConfig);
 		}
 	}
 }

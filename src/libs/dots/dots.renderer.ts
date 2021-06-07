@@ -46,9 +46,9 @@ export class DotsRenderer {
 	}
 
 	private initBehavior(): void {
-		this.hoverAction = new HoverAction(this.model);
+		this.hoverAction = new HoverAction(this.model, this.config.dotsConfig);
 		this.clickAction = new ClickAction(this.model);
-		this.highlightByIdAction = new HighlightDotAction(this.model, this.dotsContainer);
+		this.highlightByIdAction = new HighlightDotAction(this.model, this.dotsContainer, this.config.dotsConfig);
 
 		combineLatest([
 			this.model.rangeX$,
@@ -123,6 +123,7 @@ export class DotsRenderer {
 
 				if (isClustered) {
 					dotsNumber = `${cluster.items.length}`;
+					container.classed('dot--cluster', true);
 				} else {
 					dotsNumber = firstItem.status === DotStatus.Expired ? '' : `${firstItem.number}`;
 				}
@@ -159,6 +160,7 @@ export class DotsRenderer {
 
 				if (isClustered) {
 					dotsNumber = `${cluster.items.length}`;
+					container.classed('dot--cluster', true);
 				} else {
 					dotsNumber = firstItem.status === DotStatus.Expired ? '' : `${firstItem.number}`;
 				}

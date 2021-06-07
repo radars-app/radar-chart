@@ -108,6 +108,7 @@ export class DividersRenderer {
 			const ringNamesToRender: string[] = container.datum().isLabeled ? this.model.ringNames$.getValue() : [];
 			const backgroundContainer: D3Selection = appendNodeIfNotExist(container, 'divider__labels-background');
 			const textContainer: D3Selection = appendNodeIfNotExist(container, 'divider__labels');
+			textContainer.attr('transform', 'translateZ(0)');
 			this.labelsRenderer.render(backgroundContainer, textContainer, range, ringNamesToRender);
 		}
 	}

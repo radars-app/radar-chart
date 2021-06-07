@@ -7,20 +7,12 @@
 	transition: opacity 0.2s linear;
 	outline: none;
 
-	&--blurred {
-		opacity: 0.6;
-	}
-
 	&--hovered {
 		opacity: 1;
 	}
 
-	&--blurred-cluster {
-		opacity: 0.6 !important;
-	}
-
-	&--focused-cluster {
-		opacity: 1 !important;
+	.dot__circle circle {
+		transition: r 0.1s linear;
 	}
 
 	&__number {
