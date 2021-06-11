@@ -95,6 +95,7 @@ export class RadarChartRenderer {
 		});
 
 		this.size$.pipe(debounceTime(150)).subscribe(() => {
+			this.dotsRenderer.updateDotsContainer(this.radarDiameter);
 			this.calculateInitialTranslate();
 			this.applyInitialTransform();
 		});
