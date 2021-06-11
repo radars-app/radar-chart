@@ -4,6 +4,7 @@ import { RadarChartModel } from '../../radar-chart/radar-chart.model';
 import { Cluster } from '../../../models/cluster';
 import { RadarDot } from '../../../models/radar-dot';
 import { DotsConfig } from '../dots.config';
+import { DotStatus } from '../../../models/dot-status';
 
 export class HighlightDotAction extends ActionBase {
 	constructor(private model: RadarChartModel, private container: D3Selection, private dotsConfig: DotsConfig) {
@@ -17,6 +18,7 @@ export class HighlightDotAction extends ActionBase {
 		const self: HighlightDotAction = this;
 		const allDots: D3Selection = this.container.selectAll('g.dot');
 		let dotForHighlight: D3Selection;
+		let clusterApplyTo: Cluster;
 
 		if (Boolean(dotId)) {
 			dotForHighlight = allDots.filter((cluster: Cluster) => {
@@ -29,10 +31,24 @@ export class HighlightDotAction extends ActionBase {
 				return isDotInCurrentCluster;
 			});
 			dotForHighlight.classed(self.hoveredClassName, true);
-			if (dotForHighlight.classed('dot--cluster')) {
+			clusterApplyTo = dotForHighlight.datum();
+
+			const isCluster: boolean = clusterApplyTo.items.length > 1;
+			const dotStatus: DotStatus = clusterApplyTo.items[0].status;
+
+			if (isCluster) {
 				dotForHighlight.select('circle').attr('r', self.dotsConfig.clusterRadius + 1);
 			} else {
-				dotForHighlight.select('circle').attr('r', self.dotsConfig.dotRadius + 1);
+				if (dotStatus === DotStatus.Expired || dotStatus === DotStatus.NoChanges) {
+					dotForHighlight.select('circle').attr('r', self.dotsConfig.dotRadius + 1);
+				} else if (dotStatus === DotStatus.Updated || dotStatus === DotStatus.Moved) {
+					dotForHighlight
+						.select('.dot__circle > g')
+						.attr('transform', `translate(-${self.dotsConfig.dotRadius + 3}, -${self.dotsConfig.dotRadius + 3})`)
+						.select('svg')
+						.attr('width', self.dotsConfig.dotDiameterForStatusIcon + 2)
+						.attr('height', self.dotsConfig.dotDiameterForStatusIcon + 2);
+				}
 			}
 		} else {
 			self.resetDotHover(allDots, self.dotsConfig);

@@ -45,6 +45,10 @@ export class DotsRenderer {
 		this.initIcons(container);
 	}
 
+	public updateDotsContainer(radarDiameter: number): void {
+		this.dotsContainer.attr('transform', `translate(${radarDiameter}, 0) rotate(90)`);
+	}
+
 	private initBehavior(): void {
 		this.hoverAction = new HoverAction(this.model, this.config.dotsConfig);
 		this.clickAction = new ClickAction(this.model);
