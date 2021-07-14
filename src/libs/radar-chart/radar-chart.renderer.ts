@@ -76,7 +76,7 @@ export class RadarChartRenderer {
 		});
 
 		this.model.zoomOut$.subscribe(() => {
-			this.scale = this.scale / 2;
+			this.scale = Math.max(this.scale / 2, this.initialScale);
 			this.applyScale([scalePointX, scalePointY]);
 		});
 
@@ -109,7 +109,7 @@ export class RadarChartRenderer {
 		const self: RadarChartRenderer = this;
 		const zoomBehavior: D3ZoomBehavior = zoom().on('zoom', function (event: D3ZoomEvent): void {
 			self.zoomContainer.attr('transform', event.transform.toString());
-			self.scale = event.transform.k;
+			self.scale = Math.max(event.transform.k, self.initialScale);
 			self.model.zoomed$.next();
 		});
 
@@ -118,6 +118,7 @@ export class RadarChartRenderer {
 		this.calculateInitialTranslate();
 		const transform: ZoomTransform = zoomIdentity.translate(this.initialTranslate.x, this.initialTranslate.y).scale(this.scale);
 		zoomBehavior.transform(this.container, transform);
+		zoomBehavior.scaleExtent([this.initialScale, Infinity]);
 
 		return zoomBehavior;
 	}
